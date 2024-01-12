@@ -6,6 +6,8 @@ import time
 from matplotlib import pyplot as plt
 from matplotlib.patches import Rectangle
 
+import cv2 as cv
+
 
 def CHALL_AGC_ComputeDetScores(DetectionSTR, AGC_Challenge1_STR, show_figures):
     #  Compute face detection score
@@ -16,6 +18,8 @@ def CHALL_AGC_ComputeDetScores(DetectionSTR, AGC_Challenge1_STR, show_figures):
     #     'det_faces'. This field contains as many 4-column rows as faces
     #     returned by the detector, each specifying a bounding box coordinates
     #     as [x1,y1,x2,y2], with x1 < x2 and y1 < y2.
+
+    #     COORDINATES OF THE FACE DETECTION SQAURES
     #
     #     - AGC_Challenge1_STR: The ground truth structure (e.g.AGC_Challenge1_TRAINING or AGC_Challenge1_TEST).
     #
@@ -106,7 +110,25 @@ def CHALL_AGC_ComputeDetScores(DetectionSTR, AGC_Challenge1_STR, show_figures):
 
 def MyFaceDetectionFunction(A):
     # Function to implement
-    print()
+    grayscale = cv.cvtColor(A, cv.COLOR_BGR2GRAY)
+
+    haar_cascade = cv.CascadeClassifier('haarcascade_frontalface_default.xml')
+    eye_cascade = cv.CascadeClassifier('haarcascade_eye.xml')
+    eyeglasses_cascade = cv.CascadeClassifier('haarcascade_eye_tree_eyeglasses.xml')
+
+    detected_faces = haar_cascade.detectMultiScale(grayscale, scaleFactor=1.2, minNeighbors=3) 
+    # scale factor: how much the image is reduced at each step. 1.05 --> 5%
+
+    valid_faces = [] # use eye detections to filter out false positives
+    for (x, y, w, h) in detected_faces:
+        face_roi = grayscale[y:y+h, x:x+w]
+        detected_eyes = eye_cascade.detectMultiScale(face_roi)
+        detected_eyeglasses = eyeglasses_cascade.detectMultiScale(face_roi)
+
+        if len(detected_eyes) > 0 or len(detected_eyeglasses) > 0:
+            valid_faces.append([int(x), int(y), int(x + w), int(y + h)])
+
+    return valid_faces
 
 
 # Basic script for Face Detection Challenge
@@ -125,7 +147,7 @@ AGC_Challenge1_TRAINING = pd.DataFrame(AGC_Challenge1_TRAINING, columns=columns)
 
 # Provide the path to the input images, for example
 # 'C:/AGC_Challenge/images/'
-imgPath = ""
+imgPath = "TRAINING/"
 AGC_Challenge1_TRAINING['imageName'] = imgPath + AGC_Challenge1_TRAINING['imageName'].astype(str)
 # Initialize results structure
 DetectionSTR = []
