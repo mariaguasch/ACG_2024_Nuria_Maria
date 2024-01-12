@@ -108,26 +108,50 @@ def CHALL_AGC_ComputeDetScores(DetectionSTR, AGC_Challenge1_STR, show_figures):
     return FD_score
 
 
-def MyFaceDetectionFunction(A):
+def MyFaceDetectionFunction(A, name):
     # Function to implement
     grayscale = cv.cvtColor(A, cv.COLOR_BGR2GRAY)
 
     haar_cascade = cv.CascadeClassifier('haarcascade_frontalface_default.xml')
     eye_cascade = cv.CascadeClassifier('haarcascade_eye.xml')
     eyeglasses_cascade = cv.CascadeClassifier('haarcascade_eye_tree_eyeglasses.xml')
+    nose_cascade = cv.CascadeClassifier('haarcascade_mcs_nose.xml')
+    mouth_cascade = cv.CascadeClassifier('haarcascade_mcs_mouth.xml')
+    
+    detected_faces = haar_cascade.detectMultiScale(grayscale, scaleFactor=1.05, minNeighbors=3) 
+    # scaleFactor: how much the image is reduced at each step. 1.05 --> 5%
 
-    detected_faces = haar_cascade.detectMultiScale(grayscale, scaleFactor=1.2, minNeighbors=3) 
-    # scale factor: how much the image is reduced at each step. 1.05 --> 5%
-
-    valid_faces = [] # use eye detections to filter out false positives
+    valid_faces = [] # use other feature detections to filter out false positives
     for (x, y, w, h) in detected_faces:
         face_roi = grayscale[y:y+h, x:x+w]
         detected_eyes = eye_cascade.detectMultiScale(face_roi)
         detected_eyeglasses = eyeglasses_cascade.detectMultiScale(face_roi)
+        detected_nose = nose_cascade.detectMultiScale(face_roi)
+        detected_mouth = mouth_cascade.detectMultiScale(face_roi)
+    
+        all_detected = len(detected_faces) + len(detected_eyes) + len(detected_eyeglasses) + len(detected_nose) + len(detected_mouth)
+        #idea: if a cat is detected, substract some score
+        #print(name, ':', all_detected)
 
-        if len(detected_eyes) > 0 or len(detected_eyeglasses) > 0:
-            valid_faces.append([int(x), int(y), int(x + w), int(y + h)])
+        if all_detected >= 8:
+            #valid_faces.append([int(x), int(y), int(x + w), int(y + h)])
+            valid_faces.append([int(x), int(y), int(x + w), int(y + h), all_detected])
 
+        #if len(detected_eyes) > 0 or len(detected_eyeglasses) > 0:
+            #valid_faces.append([int(x), int(y), int(x + w), int(y + h)])
+    
+   # Sort faces based on size (width * height)
+    #valid_faces = sorted(valid_faces, key=lambda x: x[2] * x[3], reverse=True)
+
+    # Keep only the two largest faces
+    #valid_faces = valid_faces[:2]
+
+    valid_faces = sorted(valid_faces, key=lambda x: x[4], reverse=True)
+
+    # Keep only the two largest faces without the all_detected score
+    valid_faces = valid_faces[:2]
+    valid_faces = [[x[0], x[1], x[2], x[3]] for x in valid_faces]  # Remove the all_detected score
+    
     return valid_faces
 
 
@@ -167,7 +191,7 @@ for idx, im in enumerate(AGC_Challenge1_TRAINING['imageName']):
         # Each bounding box that is detected will be indicated in a
         # separate row in det_faces
 
-        det_faces = MyFaceDetectionFunction(A)
+        det_faces = MyFaceDetectionFunction(A, im)
 
         tt = time.time() - ti
         total_time = total_time + tt
@@ -178,7 +202,7 @@ for idx, im in enumerate(AGC_Challenge1_TRAINING['imageName']):
 
     DetectionSTR.append(det_faces)
 
-FD_score = CHALL_AGC_ComputeDetScores(DetectionSTR, AGC_Challenge1_TRAINING, show_figures=False)
+FD_score = CHALL_AGC_ComputeDetScores(DetectionSTR, AGC_Challenge1_TRAINING, show_figures=True)
 _, rem = divmod(total_time, 3600)
 minutes, seconds = divmod(rem, 60)
 print('F1-score: %.2f, Total time: %2d m %.2f s' % (100 * FD_score, int(minutes), seconds))
