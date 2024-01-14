@@ -116,24 +116,35 @@ def MyFaceDetectionFunction(A, name):
     eye_cascade = cv.CascadeClassifier('haarcascade_eye.xml')
     eyeglasses_cascade = cv.CascadeClassifier('haarcascade_eye_tree_eyeglasses.xml')
     nose_cascade = cv.CascadeClassifier('haarcascade_mcs_nose.xml')
-    mouth_cascade = cv.CascadeClassifier('haarcascade_mcs_mouth.xml')
+    #mouth_cascade = cv.CascadeClassifier('haarcascade_mcs_mouth.xml')
+    mouth_cascade = cv.CascadeClassifier('haarcascade_smile.xml')
+    profile_cascade = cv.CascadeClassifier('haarcascade_profileface.xml')
+    cat_cascade = cv.CascadeClassifier('haarcascade_frontalcatface.xml')
     
-    detected_faces = haar_cascade.detectMultiScale(grayscale, scaleFactor=1.05, minNeighbors=3) 
+    
+    detected_faces = haar_cascade.detectMultiScale(grayscale, scaleFactor=1.2, minNeighbors=3) 
     # scaleFactor: how much the image is reduced at each step. 1.05 --> 5%
 
     valid_faces = [] # use other feature detections to filter out false positives
+
     for (x, y, w, h) in detected_faces:
         face_roi = grayscale[y:y+h, x:x+w]
         detected_eyes = eye_cascade.detectMultiScale(face_roi)
         detected_eyeglasses = eyeglasses_cascade.detectMultiScale(face_roi)
         detected_nose = nose_cascade.detectMultiScale(face_roi)
         detected_mouth = mouth_cascade.detectMultiScale(face_roi)
+        detected_profile = profile_cascade.detectMultiScale(face_roi)
+        detected_cat = cat_cascade.detectMultiScale(face_roi)
     
-        all_detected = len(detected_faces) + len(detected_eyes) + len(detected_eyeglasses) + len(detected_nose) + len(detected_mouth)
-        #idea: if a cat is detected, substract some score
+        all_detected =  len(detected_eyes) + len(detected_nose) + len(detected_mouth) + len(detected_profile) + len(detected_eyeglasses)# - len(detected_cat)
+        # len(detected_faces) +
+
+        #treure profile !! ho diu enunciat
+
+
         #print(name, ':', all_detected)
 
-        if all_detected >= 8:
+        if all_detected >= 4: # amb 5 --> 80.64
             #valid_faces.append([int(x), int(y), int(x + w), int(y + h)])
             valid_faces.append([int(x), int(y), int(x + w), int(y + h), all_detected])
 
@@ -202,7 +213,7 @@ for idx, im in enumerate(AGC_Challenge1_TRAINING['imageName']):
 
     DetectionSTR.append(det_faces)
 
-FD_score = CHALL_AGC_ComputeDetScores(DetectionSTR, AGC_Challenge1_TRAINING, show_figures=True)
+FD_score = CHALL_AGC_ComputeDetScores(DetectionSTR, AGC_Challenge1_TRAINING, show_figures=False)
 _, rem = divmod(total_time, 3600)
 minutes, seconds = divmod(rem, 60)
 print('F1-score: %.2f, Total time: %2d m %.2f s' % (100 * FD_score, int(minutes), seconds))
