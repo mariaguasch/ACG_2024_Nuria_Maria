@@ -117,7 +117,7 @@ def MyFaceDetectionFunction(A, name):
     eyeglasses_cascade = cv.CascadeClassifier('haarcascade_eye_tree_eyeglasses.xml')
     nose_cascade = cv.CascadeClassifier('haarcascade_mcs_nose.xml')
     mouth_cascade = cv.CascadeClassifier('haarcascade_mcs_mouth.xml')
-    # mouth_cascade = cv.CascadeClassifier('haarcascade_smile.xml')
+    # smile_cascade = cv.CascadeClassifier('haarcascade_smile.xml')
     profile_cascade = cv.CascadeClassifier('haarcascade_profileface.xml')
     cat_cascade = cv.CascadeClassifier('haarcascade_frontalcatface.xml')
     
@@ -135,8 +135,9 @@ def MyFaceDetectionFunction(A, name):
         detected_mouth = mouth_cascade.detectMultiScale(face_roi)
         detected_profile = profile_cascade.detectMultiScale(face_roi)
         detected_cat = cat_cascade.detectMultiScale(face_roi)
+        # detected_smile = smile_cascade.detectMultiScale(face_roi)
     
-        all_detected =  len(detected_eyes) + len(detected_nose) + len(detected_mouth) + len(detected_eyeglasses)# - len(detected_cat) + len(detected_profile)
+        all_detected =  len(detected_eyes) + len(detected_nose) + len(detected_mouth) + len(detected_eyeglasses) #+ len(detected_smile) - len(detected_cat) + len(detected_profile)
         # len(detected_faces) +
 
         #print(name, ':', all_detected)
