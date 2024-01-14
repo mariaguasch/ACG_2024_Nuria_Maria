@@ -116,8 +116,8 @@ def MyFaceDetectionFunction(A, name):
     eye_cascade = cv.CascadeClassifier('haarcascade_eye.xml')
     eyeglasses_cascade = cv.CascadeClassifier('haarcascade_eye_tree_eyeglasses.xml')
     nose_cascade = cv.CascadeClassifier('haarcascade_mcs_nose.xml')
-    # mouth_cascade = cv.CascadeClassifier('haarcascade_mcs_mouth.xml')
-    mouth_cascade = cv.CascadeClassifier('haarcascade_smile.xml')
+    mouth_cascade = cv.CascadeClassifier('haarcascade_mcs_mouth.xml')
+    # mouth_cascade = cv.CascadeClassifier('haarcascade_smile.xml')
     profile_cascade = cv.CascadeClassifier('haarcascade_profileface.xml')
     cat_cascade = cv.CascadeClassifier('haarcascade_frontalcatface.xml')
     
