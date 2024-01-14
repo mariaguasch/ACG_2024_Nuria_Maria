@@ -136,11 +136,8 @@ def MyFaceDetectionFunction(A, name):
         detected_profile = profile_cascade.detectMultiScale(face_roi)
         detected_cat = cat_cascade.detectMultiScale(face_roi)
     
-        all_detected =  len(detected_eyes) + len(detected_nose) + len(detected_mouth) + len(detected_profile) + len(detected_eyeglasses)# - len(detected_cat)
+        all_detected =  len(detected_eyes) + len(detected_nose) + len(detected_mouth) + len(detected_eyeglasses)# - len(detected_cat) + len(detected_profile)
         # len(detected_faces) +
-
-        #treure profile !! ho diu enunciat
-
 
         #print(name, ':', all_detected)
 
