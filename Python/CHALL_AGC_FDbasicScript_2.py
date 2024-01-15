@@ -110,7 +110,8 @@ def CHALL_AGC_ComputeDetScores(DetectionSTR, AGC_Challenge1_STR, show_figures):
 
 def MyFaceDetectionFunction(A, name):
     # Function to implement
-    grayscale = cv.cvtColor(A, cv.COLOR_BGR2GRAY)
+    if not len(A.shape) == 2:
+        grayscale = cv.cvtColor(A, cv.COLOR_BGR2GRAY)
 
     haar_cascade = cv.CascadeClassifier('haarcascade_frontalface_default.xml')
     eye_cascade = cv.CascadeClassifier('haarcascade_eye.xml')
@@ -211,7 +212,7 @@ for idx, im in enumerate(AGC_Challenge1_TRAINING['imageName']):
 
     DetectionSTR.append(det_faces)
 
-FD_score = CHALL_AGC_ComputeDetScores(DetectionSTR, AGC_Challenge1_TRAINING, show_figures=False)
+FD_score = CHALL_AGC_ComputeDetScores(DetectionSTR, AGC_Challenge1_TRAINING, show_figures=True)
 _, rem = divmod(total_time, 3600)
 minutes, seconds = divmod(rem, 60)
 print('F1-score: %.2f, Total time: %2d m %.2f s' % (100 * FD_score, int(minutes), seconds))
