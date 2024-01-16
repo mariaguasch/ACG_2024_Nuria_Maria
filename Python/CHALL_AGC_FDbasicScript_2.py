@@ -91,7 +91,7 @@ def CHALL_AGC_ComputeDetScores(DetectionSTR, AGC_Challenge1_STR, show_figures):
                         scoresSTR['Fmatrix'][i] = 0
                     else:
                         max_ind = np.unravel_index(np.argmax(scoresSTR['Fmatrix'][i], axis=None), scoresSTR['Fmatrix'][i].shape)
-                        scoresSTR['F1'][i][max_ind[1]] = max_F
+                        scoresSTR['F1'][i][k3] = max_F
                         scoresSTR['Fmatrix'][i][max_ind[0], :] = 0
                         scoresSTR['Fmatrix'][i][:, max_ind[1]] = 0
         if show_figures:
@@ -108,11 +108,8 @@ def CHALL_AGC_ComputeDetScores(DetectionSTR, AGC_Challenge1_STR, show_figures):
     return FD_score
 
 
-def MyFaceDetectionFunction(A, name):
+def MyFaceDetectionFunction(grayscale, name):
     # Function to implement
-    if not len(A.shape) == 2:
-        grayscale = cv.cvtColor(A, cv.COLOR_BGR2GRAY)
-
     haar_cascade = cv.CascadeClassifier('haarcascade_frontalface_default.xml')
     eye_cascade = cv.CascadeClassifier('haarcascade_eye.xml')
     eyeglasses_cascade = cv.CascadeClassifier('haarcascade_eye_tree_eyeglasses.xml')
@@ -200,19 +197,25 @@ for idx, im in enumerate(AGC_Challenge1_TRAINING['imageName']):
         # in image A, specificed as [x1 y1 x2 y2]
         # Each bounding box that is detected will be indicated in a
         # separate row in det_faces
+        if not len(A.shape) == 2:
+            grayscale = cv.cvtColor(A, cv.COLOR_BGR2GRAY)
+        else:
+            # Handle case where image is already grayscale
+            grayscale = A
 
-        det_faces = MyFaceDetectionFunction(A, im)
+        det_faces = MyFaceDetectionFunction(grayscale, im)
 
         tt = time.time() - ti
         total_time = total_time + tt
-    except:
+    except Exception as e:
         # If the face detection function fails, it will be assumed that no
         # face was detected for this input image
+        print(f"Caught an exception in {im}: {type(e).__name__} - {str(e)}")
         det_faces = []
 
     DetectionSTR.append(det_faces)
 
-FD_score = CHALL_AGC_ComputeDetScores(DetectionSTR, AGC_Challenge1_TRAINING, show_figures=True)
+FD_score = CHALL_AGC_ComputeDetScores(DetectionSTR, AGC_Challenge1_TRAINING, show_figures=False)
 _, rem = divmod(total_time, 3600)
 minutes, seconds = divmod(rem, 60)
 print('F1-score: %.2f, Total time: %2d m %.2f s' % (100 * FD_score, int(minutes), seconds))
