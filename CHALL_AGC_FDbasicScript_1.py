@@ -110,56 +110,36 @@ def CHALL_AGC_ComputeDetScores(DetectionSTR, AGC_Challenge1_STR, show_figures):
 
 def MyFaceDetectionFunction(grayscale, name):
     # Function to implement
-    # grayscale = cv.cvtColor(A, cv.COLOR_BGR2GRAY)
-
     haar_cascade = cv.CascadeClassifier('haarcascade_frontalface_default.xml')
     eye_cascade = cv.CascadeClassifier('haarcascade_eye.xml')
-    #eyeglasses_cascade = cv.CascadeClassifier('haarcascade_eye_tree_eyeglasses.xml')
     nose_cascade = cv.CascadeClassifier('haarcascade_mcs_nose.xml')
-    mouth_cascade = cv.CascadeClassifier('haarcascade_mcs_mouth.xml')
-    # smile_cascade = cv.CascadeClassifier('haarcascade_smile.xml')
-    #profile_cascade = cv.CascadeClassifier('haarcascade_profileface.xml')
-    #cat_cascade = cv.CascadeClassifier('haarcascade_frontalcatface.xml')
-    
+    mouth_cascade = cv.CascadeClassifier('haarcascade_mcs_mouth.xml')    
     
     detected_faces = haar_cascade.detectMultiScale(grayscale, scaleFactor=1.2, minNeighbors=3) 
     # scaleFactor: how much the image is reduced at each step. 1.05 --> 5%
 
-    valid_faces = [] # use other feature detections to filter out false positives
+    valid_faces = []
 
-    for (x, y, w, h) in detected_faces:
+    # Iterate through all the detected faces, to then use other classifiers to get better accuracy
+    for (x, y, w, h) in detected_faces: 
         face_roi = grayscale[y:y+h, x:x+w]
         detected_eyes = eye_cascade.detectMultiScale(face_roi)
-        #detected_eyeglasses = eyeglasses_cascade.detectMultiScale(face_roi)
         detected_nose = nose_cascade.detectMultiScale(face_roi)
         detected_mouth = mouth_cascade.detectMultiScale(face_roi)
-        #detected_profile = profile_cascade.detectMultiScale(face_roi)
-        #detected_cat = cat_cascade.detectMultiScale(face_roi)
-        # detected_smile = smile_cascade.detectMultiScale(face_roi)
     
-        all_detected =  len(detected_eyes) + len(detected_mouth) + len(detected_nose) # + len(detected_eyeglasses) #+ len(detected_smile) - len(detected_cat) + len(detected_profile)
-        # len(detected_faces) +
-
-        #print(name, ':', all_detected)
+        all_detected =  len(detected_eyes) + len(detected_mouth) + len(detected_nose)
+        
+        # We have created a "score" which tells us how many features have been detected in a face 
+        # If at least 3 of them are, we consider this face as valid
 
         if all_detected >= 3:
-            #valid_faces.append([int(x), int(y), int(x + w), int(y + h)])
             valid_faces.append([int(x), int(y), int(x + w), int(y + h), all_detected])
 
-        #if len(detected_eyes) > 0 or len(detected_eyeglasses) > 0:
-            #valid_faces.append([int(x), int(y), int(x + w), int(y + h)])
-    
-   # Sort faces based on size (width * height)
-    #valid_faces = sorted(valid_faces, key=lambda x: x[2] * x[3], reverse=True)
-
-    # Keep only the two largest faces
-    #valid_faces = valid_faces[:2]
-
     valid_faces = sorted(valid_faces, key=lambda x: x[4], reverse=True)
+    # We only keep the top 2 faces with highest score, meaning that more of its features (eyes, mouth, nose) have been detected
 
-    # Keep only the two largest faces without the all_detected score
     valid_faces = valid_faces[:2]
-    valid_faces = [[x[0], x[1], x[2], x[3]] for x in valid_faces]  # Remove the all_detected score
+    valid_faces = [[x[0], x[1], x[2], x[3]] for x in valid_faces]
     
     return valid_faces
 
@@ -199,6 +179,7 @@ for idx, im in enumerate(AGC_Challenge1_TRAINING['imageName']):
         # in image A, specificed as [x1 y1 x2 y2]
         # Each bounding box that is detected will be indicated in a
         # separate row in det_faces
+
         if not len(A.shape) == 2:
             grayscale = cv.cvtColor(A, cv.COLOR_BGR2GRAY)
         else:
@@ -210,6 +191,7 @@ for idx, im in enumerate(AGC_Challenge1_TRAINING['imageName']):
         tt = time.time() - ti
         total_time = total_time + tt
     except Exception as e:
+
         # If the face detection function fails, it will be assumed that no
         # face was detected for this input image
         print(f"Caught an exception in {im}: {type(e).__name__} - {str(e)}")
