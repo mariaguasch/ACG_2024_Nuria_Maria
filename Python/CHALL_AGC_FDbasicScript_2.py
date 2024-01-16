@@ -120,7 +120,7 @@ def MyFaceDetectionFunction(grayscale, name):
     cat_cascade = cv.CascadeClassifier('haarcascade_frontalcatface.xml')
     
     
-    detected_faces = haar_cascade.detectMultiScale(grayscale, scaleFactor=1.2, minNeighbors=3) 
+    detected_faces = haar_cascade.detectMultiScale(grayscale, scaleFactor=1.2, minNeighbors=2) 
     # scaleFactor: how much the image is reduced at each step. 1.05 --> 5%
 
     valid_faces = [] # use other feature detections to filter out false positives
