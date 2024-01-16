@@ -108,9 +108,9 @@ def CHALL_AGC_ComputeDetScores(DetectionSTR, AGC_Challenge1_STR, show_figures):
     return FD_score
 
 
-def MyFaceDetectionFunction(A, name):
+def MyFaceDetectionFunction(grayscale, name):
     # Function to implement
-    grayscale = cv.cvtColor(A, cv.COLOR_BGR2GRAY)
+    # grayscale = cv.cvtColor(A, cv.COLOR_BGR2GRAY)
 
     haar_cascade = cv.CascadeClassifier('haarcascade_frontalface_default.xml')
     eye_cascade = cv.CascadeClassifier('haarcascade_eye.xml')
@@ -137,12 +137,12 @@ def MyFaceDetectionFunction(A, name):
         detected_cat = cat_cascade.detectMultiScale(face_roi)
         # detected_smile = smile_cascade.detectMultiScale(face_roi)
     
-        all_detected =  len(detected_eyes) + len(detected_nose) + len(detected_mouth) + len(detected_eyeglasses) #+ len(detected_smile) - len(detected_cat) + len(detected_profile)
+        all_detected =  len(detected_eyes) + len(detected_nose) + len(detected_mouth) # + len(detected_eyeglasses) #+ len(detected_smile) - len(detected_cat) + len(detected_profile)
         # len(detected_faces) +
 
         #print(name, ':', all_detected)
 
-        if all_detected >= 4: # amb 5 --> 80.64
+        if all_detected >= 3: # 84.22
             #valid_faces.append([int(x), int(y), int(x + w), int(y + h)])
             valid_faces.append([int(x), int(y), int(x + w), int(y + h), all_detected])
 
@@ -199,14 +199,20 @@ for idx, im in enumerate(AGC_Challenge1_TRAINING['imageName']):
         # in image A, specificed as [x1 y1 x2 y2]
         # Each bounding box that is detected will be indicated in a
         # separate row in det_faces
+        if not len(A.shape) == 2:
+            grayscale = cv.cvtColor(A, cv.COLOR_BGR2GRAY)
+        else:
+            # Handle case where image is already grayscale
+            grayscale = A
 
-        det_faces = MyFaceDetectionFunction(A, im)
+        det_faces = MyFaceDetectionFunction(grayscale, im)
 
         tt = time.time() - ti
         total_time = total_time + tt
-    except:
+    except Exception as e:
         # If the face detection function fails, it will be assumed that no
         # face was detected for this input image
+        print(f"Caught an exception in {im}: {type(e).__name__} - {str(e)}")
         det_faces = []
 
     DetectionSTR.append(det_faces)
