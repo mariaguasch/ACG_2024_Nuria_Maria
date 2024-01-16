@@ -114,12 +114,12 @@ def MyFaceDetectionFunction(grayscale, name):
 
     haar_cascade = cv.CascadeClassifier('haarcascade_frontalface_default.xml')
     eye_cascade = cv.CascadeClassifier('haarcascade_eye.xml')
-    eyeglasses_cascade = cv.CascadeClassifier('haarcascade_eye_tree_eyeglasses.xml')
+    #eyeglasses_cascade = cv.CascadeClassifier('haarcascade_eye_tree_eyeglasses.xml')
     nose_cascade = cv.CascadeClassifier('haarcascade_mcs_nose.xml')
     mouth_cascade = cv.CascadeClassifier('haarcascade_mcs_mouth.xml')
     # smile_cascade = cv.CascadeClassifier('haarcascade_smile.xml')
-    profile_cascade = cv.CascadeClassifier('haarcascade_profileface.xml')
-    cat_cascade = cv.CascadeClassifier('haarcascade_frontalcatface.xml')
+    #profile_cascade = cv.CascadeClassifier('haarcascade_profileface.xml')
+    #cat_cascade = cv.CascadeClassifier('haarcascade_frontalcatface.xml')
     
     
     detected_faces = haar_cascade.detectMultiScale(grayscale, scaleFactor=1.2, minNeighbors=3) 
@@ -130,19 +130,19 @@ def MyFaceDetectionFunction(grayscale, name):
     for (x, y, w, h) in detected_faces:
         face_roi = grayscale[y:y+h, x:x+w]
         detected_eyes = eye_cascade.detectMultiScale(face_roi)
-        detected_eyeglasses = eyeglasses_cascade.detectMultiScale(face_roi)
+        #detected_eyeglasses = eyeglasses_cascade.detectMultiScale(face_roi)
         detected_nose = nose_cascade.detectMultiScale(face_roi)
         detected_mouth = mouth_cascade.detectMultiScale(face_roi)
-        detected_profile = profile_cascade.detectMultiScale(face_roi)
-        detected_cat = cat_cascade.detectMultiScale(face_roi)
+        #detected_profile = profile_cascade.detectMultiScale(face_roi)
+        #detected_cat = cat_cascade.detectMultiScale(face_roi)
         # detected_smile = smile_cascade.detectMultiScale(face_roi)
     
-        all_detected =  len(detected_eyes) + len(detected_nose) + len(detected_mouth) # + len(detected_eyeglasses) #+ len(detected_smile) - len(detected_cat) + len(detected_profile)
+        all_detected =  len(detected_eyes) + len(detected_mouth) + len(detected_nose) # + len(detected_eyeglasses) #+ len(detected_smile) - len(detected_cat) + len(detected_profile)
         # len(detected_faces) +
 
         #print(name, ':', all_detected)
 
-        if all_detected >= 3: # 84.22
+        if all_detected >= 3:
             #valid_faces.append([int(x), int(y), int(x + w), int(y + h)])
             valid_faces.append([int(x), int(y), int(x + w), int(y + h), all_detected])
 
