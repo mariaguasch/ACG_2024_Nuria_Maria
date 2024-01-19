@@ -1,6 +1,8 @@
 import os
 import shutil
 
+# SCRIPT TO EXCTRACT LANDMARKED IMAGES FROM FOLDERS
+
 # Source directory containing subfolders with images
 source_directory = "/Users/nuriacodina/Desktop/UPF/QUART/2N_TRIM/FGA/ACG_2024_Nuria_Maria/lab2/dataset_chicago/cfd/CFD Version 3.0/Images/CFD"
 

@@ -160,5 +160,4 @@ cython_debug/
 #.idea/
 
 face_images.npz
-CFD-INDIA
-CFD-MR
+vectorized_faces.pkl
