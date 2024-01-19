@@ -160,3 +160,5 @@ cython_debug/
 #.idea/
 
 face_images.npz
+CFD-INDIA
+CFD-MR
