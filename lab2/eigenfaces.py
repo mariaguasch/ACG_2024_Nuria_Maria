@@ -1,35 +1,38 @@
-from numpy import load
+import cv2
+import os
 import numpy as np
-from imageio import imread
-from scipy.io import loadmat
-import pandas as pd
-import time
-from matplotlib import pyplot as plt
-from matplotlib.patches import Rectangle
-import random
 
-# import cv2 as cv
+# Directory containing face images
+faces_directory = "dataset_chicago/cfd/CFD Version 3.0/Images/NeutralFaces"
+target_height, target_width = 90, 128
 
-# npz_file = np.load(r'C:\Users\guasc\Documentos\GitHub\ACG_2024_Nuria_Maria\lab2\dataset\face_images.npz')
+# Load all face images
+face_images = []
+for filename in os.listdir(faces_directory):
+    if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+        img_path = os.path.join(faces_directory, filename)
+        img = cv2.imread(img_path)  # Read images in grayscale
+        img_resized = cv2.resize(img, (target_width, target_height))
+        face_images.append(img_resized)
 
-# npz_file = np.load('your_file.npz')
-# Access the images (assuming they are stored as an array with a specific key, e.g., 'images')
-# images_array = npz_file['face_images']
+# Convert the list of images to a NumPy array
+face_images_array = np.array(face_images)
+print('Faces converted to array')
 
-image_dir = r'C:\Users\guasc\Documentos\GitHub\ACG_2024_Nuria_Maria\lab2\dataset\face_images.npz'
-images = np.load(image_dir)['face_images']
-# Standardize the values of images 
-images = images/255.0
+# Calculate the mean face
+mean_face = np.mean(face_images_array, axis=0)
+print('Mean face computed')
 
-# Plot a random image
-m = images.shape[2] # Number of samples
-print(m)
+# Subtract the mean face from each individual face image
+subtracted_faces = face_images_array - mean_face
+print('Faces converted to subtracted')
 
-for i in range(m):
-    plt.imshow(images[:,:,i], cmap='gray')
-    plt.show()
+print(subtracted_faces[0].shape)
 
-# # Plot a random image
-# index = random.randint(0, m-1)
-# plt.imshow(images[:,:,index], cmap='gray')
-# plt.show()
+# Vectorize the subtracted faces
+vectorized_faces = subtracted_faces.reshape(subtracted_faces.shape[0], -1)
+print(vectorized_faces[0].shape)
+print(vectorized_faces.shape)
+
+# Now 'vectorized_faces' is a 2D array where each row represents a flattened face image
+# 'mean_face' is the average face calculated from all the images
