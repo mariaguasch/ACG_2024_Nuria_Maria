@@ -6,18 +6,17 @@ import pickle
 import matplotlib.pyplot as plt
 
 filename = 'vectorized_faces.pkl'
+original_height, original_width = 1718, 2444
+target_size = 250
+ratio = original_width / original_height # we want to mantain the original width/height ratio after resizing
+target_width = int(target_size * ratio)
+target_height = target_size
+
 
 if filename not in os.listdir():
 
     # Directory containing face images
     faces_directory = "dataset_chicago/cfd/CFD Version 3.0/Images/NeutralFaces"
-
-    original_height, original_width = 1718, 2444
-    target_size = 250
-    ratio = original_width / original_height # we want to mantain the original width/height ratio after resizing
-    target_width = int(target_size * ratio)
-    target_height = target_size
-
     print('loading images...')
     face_images = []
     for filename in os.listdir(faces_directory):
@@ -140,5 +139,45 @@ for i in range(num_components):
     plt.title(f"Reconstructed {i + 1}")
     plt.axis('off')
 
+plt.show()
+
+#PLOTTING THE EIGENVALUES OF OUR PCA vs RANDOM -> NO FUNCIONA, PETA LA TERMINAL
+num_noise_images = 100
+image_height, image_width = target_height, target_width  # Assuming the size of your images
+
+# Generate random noise images
+random_noise_images = np.random.randint(0, 256, size=(num_noise_images, image_height, image_width), dtype=np.uint8)
+
+# Vectorize the random noise images
+vectorized_noise_images = random_noise_images.reshape((num_noise_images, -1))
+
+# Perform PCA on vectorized noise images
+cov_matrix_noise = np.cov(vectorized_noise_images.T)
+eigenvalues_noise, _ = np.linalg.eigh(cov_matrix_noise)
+
+# Sort eigenvalues in descending order
+eigenvalues_noise = eigenvalues_noise[::-1]
+
+plt.figure(figsize=(12, 6))
+
+# Bar plot for facial images eigenvalues
+plt.subplot(1, 2, 1)
+plt.bar(range(1, len(eigenvalues) + 1), eigenvalues, color='blue')
+plt.title('Eigenvalues - Facial Images')
+plt.xlabel('Eigenvalue Index')
+plt.ylabel('Eigenvalue Magnitude')
+plt.yscale('log')  # Use log scale for better visualization
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+
+# Bar plot for random noise images eigenvalues
+plt.subplot(1, 2, 2)
+plt.bar(range(1, len(eigenvalues_noise) + 1), eigenvalues_noise, color='red')
+plt.title('Eigenvalues - Random Noise Images')
+plt.xlabel('Eigenvalue Index')
+plt.ylabel('Eigenvalue Magnitude')
+plt.yscale('log')  # Use log scale for better visualization
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+
+plt.tight_layout()
 plt.show()
 
