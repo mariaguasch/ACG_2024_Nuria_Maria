@@ -105,3 +105,40 @@ plt.imshow(normalized_first_eigenvector, cmap='gray', vmin=np.min(normalized_fir
 plt.title("First Normalized Eigenface")
 plt.axis('off')
 plt.show()'''
+
+# Projecting faces onto the eigenspace
+projections = np.dot(vectorized_faces, normalized_eigenvectors)
+print('Projections:', projections.shape)
+
+# Number of principal components to retain (you can adjust this)
+num_components = 10
+
+# Select the top 'num_components' eigenvectors and projections
+top_eigenvectors = normalized_eigenvectors[:, :num_components]
+top_projections = projections[:, :num_components]
+
+# Reconstruct the faces using the top eigenvectors and projections
+reconstructed_faces = np.dot(top_projections, top_eigenvectors.T)
+print('Reconstructed faces:', reconstructed_faces.shape)
+
+# Reshape the reconstructed faces to their original size
+reshaped_faces = reconstructed_faces.T.reshape((num_components, target_height, target_width))
+
+# Add the mean face back to obtain the final reconstructed faces
+final_reconstructed_faces = reshaped_faces + mean_face.flatten()
+
+# Display the original and reconstructed faces for visualization
+plt.figure(figsize=(12, 6))
+for i in range(num_components):
+    plt.subplot(2, num_components, i + 1)
+    plt.imshow(face_images_array[i], cmap='gray', vmin=0, vmax=255)
+    plt.title(f"Original {i + 1}")
+    plt.axis('off')
+
+    plt.subplot(2, num_components, num_components + i + 1)
+    plt.imshow(final_reconstructed_faces[i], cmap='gray', vmin=0, vmax=255)
+    plt.title(f"Reconstructed {i + 1}")
+    plt.axis('off')
+
+plt.show()
+
