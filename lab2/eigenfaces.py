@@ -58,6 +58,7 @@ if filename not in os.listdir():
     pickle.dump(target_width, open(filename, 'ab'))
     pickle.dump(target_height, open(filename, 'ab'))
     pickle.dump(face_images, open(filename, 'ab'))
+    pickle.dump(mean_face, open(filename, 'ab'))
     print('Data saved.')
 
 else:
@@ -69,6 +70,7 @@ else:
         target_width = pickle.load(file)
         target_height = pickle.load(file)
         face_images = pickle.load(file)
+        mean_face = pickle.load(file)
 
         print("Shape of matrix:", vectorized_faces.shape) # ok
 
@@ -93,7 +95,7 @@ eigenvectors = eigenvectors[:, sort_indices]
 
 # Normalize the eigenvectors
 normalized_eigenvectors = eigenvectors / np.linalg.norm(eigenvectors, axis=0)
-normalized_eigenvalues = eigenvalues / eigenvalues[0]
+normalized_eigenvalues = eigenvalues / sum(eigenvalues)
 
 print("Eigenvalues:", eigenvalues.shape)
 print("Eigenvectors:", eigenvectors.shape)
@@ -118,27 +120,56 @@ axs[1].set_ylabel("Eigenvalue Magnitude")
 fig.suptitle("Eigenvalues of original images")
 plt.tight_layout()
 plt.show()
-#########################################
+######################################### (fins aqui ok)
 
-# Projecting faces onto the eigenspace
-projections = np.dot(vectorized_faces, normalized_eigenvectors)
+'''# Projecting faces onto the eigenspace: (original data - mean)* eigen to project
+projections = np.dot(vectorized_faces, normalized_eigenvectors) # in vectorized_faces we already substracted the mean
 print('Projections:', projections.shape)
 
-'''for i in range(len(normalized_eigenvectors)):
-    face = vectorized_faces[:, 0].reshape(target_height, target_width)
+for i in range(len(normalized_eigenvectors)):
+    face = projections[:, 0].reshape(target_height, target_width) + mean_face
     plt.imshow(face, cmap='gray', vmin=0, vmax=255)
     plt.axis('off')
-    plt.show()'''
+    plt.show()
 
+###### reconstruct face with reduced set of eigenvectors: reconstruction = mean_face + eigen * projection --> reshape to visualize
+reconstructed = np.dot(normalized_eigenvalues.T, normalized_eigenvectors.T)
+print('reconstructed', reconstructed.shape)
+#= np.dot(vectorized_faces[:,0], normalized_eigenvectors[:, 0]).reshape()
+#################################################'''
 
-###### project 1 face into 1st eigenvector ######
-projected_1 = np.dot(vectorized_faces[:,0], normalized_eigenvectors[:, 0])
-#################################################
-
-# Number of principal components to retain (you can adjust this)
+# Number of principal components to keep
 num_components = 10
 
-# Select the top 'num_components' eigenvectors and projections
+print("SHAPES of projection")
+print(vectorized_faces.shape)
+print(eigenvectors.shape)
+print("")
+
+projected_images = np.dot(vectorized_faces, eigenvectors[:, :num_components])
+print('projected images shape', projected_images.shape)
+
+for i in range(num_components): # view projected face
+    face = projected_images[:, i].reshape(target_height, target_width)
+    plt.imshow(face, cmap='gray', vmin=0, vmax=255)
+    plt.axis('off')
+    plt.show()
+
+print('\nSHAPES FOR RECONSTRUCTION')
+print(projected_images.shape)
+print(eigenvectors[:, :num_components].shape)
+
+reconstructed_images = np.dot(projected_images, eigenvectors[:, :num_components].T)
+print('Shape of reconstructed', reconstructed_images.shape)
+
+for i in range(5): # only visualize 5 reconstructions
+    face = (reconstructed_images[:, i]).reshape(target_height, target_width) + mean_face
+    plt.imshow(face, cmap='gray', vmin=0, vmax=255)
+    plt.axis('off')
+    plt.show()
+
+
+'''# Select the top 'num_components' eigenvectors and projections
 top_eigenvectors = normalized_eigenvectors[:, :num_components]
 top_projections = projections[:, :num_components]
 top_eigenvalues = eigenvalues[:num_components]
@@ -166,12 +197,10 @@ for i in range(num_components):
     plt.title(f"Reconstructed {i + 1}")
     plt.axis('off')
 
-plt.show()
+plt.show()'''
 
 
-
-
-#PLOTTING THE EIGENVALUES OF OUR PCA vs RANDOM
+#PLOTTING THE EIGENVALUES OF OUR PCA vs RANDOM (a partir d'aqui ok)
 num_noise_images = 100
 image_height, image_width = target_height, target_width  # Assuming the size of your images
 
@@ -217,7 +246,7 @@ r_eigenvalues = r_eigenvalues[sort_indices]
 r_eigenvectors = r_eigenvectors[:, sort_indices]
 
 r_normalized_eigenvectors = r_eigenvectors / np.linalg.norm(r_eigenvectors, axis=0)
-r_normalized_eigenvalues = r_eigenvalues / r_eigenvalues[0]
+r_normalized_eigenvalues = r_eigenvalues / sum(r_eigenvalues)
 
 print('Random eigenvalues', r_eigenvalues.shape)
 print('Random eigenvectors', r_eigenvectors.shape)
@@ -242,15 +271,13 @@ plt.show()
 plt.plot(range(1, components + 1), r_normalized_eigenvalues[:components], marker='o', linestyle='-', label='Randomized Images')
 plt.plot(range(1, components + 1), normalized_eigenvalues[:components], marker='o', linestyle='-', label='Original Data')
 
-plt.title("Eigenvalues Comparison")
+plt.title("Eigenvalues Comparison (normalized w.r.t. total variance explained)")
 plt.xlabel("Eigenvalue Index")
 plt.ylabel("Eigenvalue Magnitude")
 
 plt.legend()
 plt.show()
 
-# DUBTE: NO SÉ SI PER VEURE LES STATISTICALLY SIGNIFICANT COMPONENTS HEM DE UTILITZAR ELS EIGENVALUES ORIGINALS O NORMALIZATS
-# Crec q si els normalizats perq si no totes les components són significants
 
 '''
 We can see that the magnitude of the eigenvalues from the original data is larger than the
