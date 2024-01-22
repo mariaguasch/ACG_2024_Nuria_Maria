@@ -6,7 +6,8 @@ import pickle
 import matplotlib.pyplot as plt
 
 filename = 'vectorized_faces.pkl'
-original_height, original_width = 1718, 2444
+original_height, original_width = 1598, 1141
+x_min, x_max, y_min, y_max = 910, 1532, 550, 1350
 target_size = 250
 ratio = original_width / original_height # we want to mantain the original width/height ratio after resizing
 target_width = int(target_size * ratio)
@@ -22,18 +23,22 @@ if filename not in os.listdir():
         if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
             img_path = os.path.join(faces_directory, filename)
             img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)  # read images in grayscale
-            img_resized = cv2.resize(img, (target_width, target_height)) # img_resized shape (250, 355)
+            cropped_img = img[y_min:y_max, x_min:x_max]
+            img_resized = cv2.resize(cropped_img, (target_width, target_height)) # img_resized shape (250, 355)
             face_images.append(img_resized)
             if len(face_images) == 1 : print(img_resized.shape)
 
-            '''
-            # If you want to visualize the images after resizing
+            '''plt.subplot(1, 2, 1)
+            plt.title("Original Image")
+            plt.imshow(img)
+            plt.axis("off")
 
-            plt.imshow(img_resized, cmap='gray', vmin=0, vmax=255)
-            plt.title(f"Resized Image")
-            plt.axis('off')  # Hide axes
-            plt.show()
-            '''
+            plt.subplot(1, 2, 2)
+            plt.title("Cropped image")
+            plt.imshow(cropped_img)
+            plt.axis("off")
+
+            plt.show()'''
 
     # Convert the list of images to a NumPy array
     face_images_array = np.array(face_images) # shape (597, 250, 355)
@@ -86,7 +91,8 @@ eigenvalues, eigenvectors = np.linalg.eigh(L)
 # Keep only the positive eigenvalues and their corresponding eigenvectors
 positive_eigenvalue_indices = eigenvalues > 0
 eigenvalues = eigenvalues[positive_eigenvalue_indices]
-eigenvectors = eigenvectors[:, positive_eigenvalue_indices]
+eigenvectors = np.dot(vectorized_faces, eigenvectors[:, positive_eigenvalue_indices]) #CANVI
+
 
 # Sort eigenvalues and corresponding eigenvectors
 sort_indices = np.argsort(eigenvalues)[::-1]
@@ -120,33 +126,19 @@ axs[1].set_ylabel("Eigenvalue Magnitude")
 fig.suptitle("Eigenvalues of original images")
 plt.tight_layout()
 plt.show()
-######################################### (fins aqui ok)
-
-'''# Projecting faces onto the eigenspace: (original data - mean)* eigen to project
-projections = np.dot(vectorized_faces, normalized_eigenvectors) # in vectorized_faces we already substracted the mean
-print('Projections:', projections.shape)
-
-for i in range(len(normalized_eigenvectors)):
-    face = projections[:, 0].reshape(target_height, target_width) + mean_face
-    plt.imshow(face, cmap='gray', vmin=0, vmax=255)
-    plt.axis('off')
-    plt.show()
-
-###### reconstruct face with reduced set of eigenvectors: reconstruction = mean_face + eigen * projection --> reshape to visualize
-reconstructed = np.dot(normalized_eigenvalues.T, normalized_eigenvectors.T)
-print('reconstructed', reconstructed.shape)
-#= np.dot(vectorized_faces[:,0], normalized_eigenvectors[:, 0]).reshape()
-#################################################'''
 
 # Number of principal components to keep
 num_components = 10
 
 print("SHAPES of projection")
 print(vectorized_faces.shape)
-print(eigenvectors.shape)
+print(normalized_eigenvectors.shape)
 print("")
 
-projected_images = np.dot(vectorized_faces, eigenvectors[:, :num_components])
+print("Shape of vectorized_faces:", vectorized_faces.shape)
+print("Shape of normalized_eigenvectors:", normalized_eigenvectors[:, :num_components].shape) #CANVI -> NORMALIZED
+
+projected_images = np.dot(vectorized_faces.T, normalized_eigenvectors[:, :num_components]) #CANVI -> NORMALIZED !! AQUI PETA PER DIMENSIONS
 print('projected images shape', projected_images.shape)
 
 for i in range(num_components): # view projected face

@@ -8,38 +8,74 @@ import pandas as pd
 from scipy.spatial import procrustes
 
 landmarks = pd.read_csv("dataset_chicago/landmarks/landmark_templates_01-29.22/Template Database CSV 012922.csv")
-landmarks['fname'] = landmarks['fname'].str.replace('.tem', '')
 
-faces_landmarks = [] # we will create a (189, 2, 597) array
+image_names = landmarks['fname'].unique()
 
-# all_landmarks = landmarks[['x', 'y']].values # have all landmarks together sense tenir en compte a quina cara pertanyen cada un ??
+# Create a list to store concatenated coordinates for each image
+concatenated_coordinates_list = []
 
-for filename in landmarks['fname'].unique():
-    subset = landmarks[landmarks['fname'] == filename]
-    faces_landmarks.append(subset[['x', 'y']].values)
+# Iterate over each image
+for image_name in image_names:
+    # Select rows corresponding to the current image
+    image_landmarks = landmarks[landmarks['fname'] == image_name]
+    
+    # Extract x and y coordinates
+    x_coordinates = image_landmarks['x'].values
+    y_coordinates = image_landmarks['y'].values
+    
+    # Concatenate x and y coordinates
+    concatenated_coordinates = np.concatenate([x_coordinates, y_coordinates])
+    
+    # Append to the list
+    concatenated_coordinates_list.append(concatenated_coordinates)
 
-landmark_coordinates = np.array(faces_landmarks)
-arr_transposed = np.transpose(landmark_coordinates, (1, 2, 0))
-landmarks = arr_transposed # shape (189, 2, 597) --> una matriu de 189 rows (1 per cada landmark) i 2 columns (x, y coordinates), per cada una de les 597 samples
-# nose si directament podem agafar tots els punts junts sense tenir en compte quins punts pertanyen a cada cara
+# Convert the list to a NumPy array
+landmarks = np.array(concatenated_coordinates_list).T
+print(landmarks)
+print(landmarks.shape)
 
-reference_landmarks = landmarks[:, :, 0]  # Choose one face as the reference
-aligned_landmarks = np.zeros_like(landmarks)
+num_faces = landmarks.shape[1]
+num_landmarks = landmarks.shape[0]//2
 
-# perform procruster to align/center all faces
-for i in range(597):
-    _, _, aligned_landmarks[:, :, i] = procrustes(reference_landmarks, landmarks[:, :, i])
+#A PARTIR DAQUI SHA DE MIRAR COM FER PROCRUSTERS
 
+# Reshape the landmarks to (num_faces, num_landmarks, 2)
+landmarks_reshaped = landmarks.reshape((num_faces, num_landmarks, 2))
 
+# Choose one face as the reference
+reference_landmarks = landmarks_reshaped[0]
+
+# Align/center all faces using Procrustes analysis
+aligned_landmarks = np.zeros_like(landmarks_reshaped)
+for i in range(num_faces):
+    _, _, aligned_landmarks[i] = procrustes(reference_landmarks, landmarks_reshaped[i])
+
+# Reshape aligned landmarks back to (num_faces, num_landmarks * 2)
+aligned_landmarks_flat = aligned_landmarks.reshape((num_faces, -1))
+
+for i in range(5):
+    # Plot original landmarks
+    plt.scatter(landmarks_reshaped[i, :, 0], landmarks_reshaped[i, :, 1], label='Original', marker='o')
+    
+    # Plot aligned landmarks
+    plt.scatter(aligned_landmarks[i, :, 0], aligned_landmarks[i, :, 1], label='Aligned', marker='x')
+    
+    plt.title(f"Landmarks for Face {i+1}")
+    plt.xlabel("X-coordinate")
+    plt.ylabel("Y-coordinate")
+    plt.legend()
+    plt.show()
+
+'''
 for i in range(5): # visualize the landmarks for each face
     landmarks[:, 1, i] = -landmarks[:, 1, i]
     plt.scatter(landmarks[:, 0, i], landmarks[:, 1, i])
     plt.title(f"Landmarks for Face {i+1}")
     plt.xlabel("X-coordinate")
     plt.ylabel("Y-coordinate")
-    plt.show()
+    plt.show()'''
 
-
+'''
 # Reshape aligned landmarks to a 2D array for further processing
 num_landmarks, num_coordinates, num_samples = aligned_landmarks.shape
 reshaped_landmarks = aligned_landmarks.reshape((num_landmarks * num_coordinates, num_samples)).T
@@ -90,3 +126,4 @@ plt.show()
 # Choose a criterion to validate the 10 extracted bases, as mentioned in the project requirements.
 
 
+'''
