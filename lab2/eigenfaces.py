@@ -22,20 +22,23 @@ if filename not in os.listdir():
     for filename in os.listdir(faces_directory):
         if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
             img_path = os.path.join(faces_directory, filename)
-            img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)  # read images in grayscale
+            # Read the image in color (RGB)
+            img_color = cv2.imread(img_path)
+            # Convert the image to grayscale
+            img = cv2.cvtColor(img_color, cv2.COLOR_BGR2GRAY)
             cropped_img = img[y_min:y_max, x_min:x_max]
             img_resized = cv2.resize(cropped_img, (target_width, target_height)) # img_resized shape (250, 355)
             face_images.append(img_resized)
-            if len(face_images) == 1 : print(img_resized.shape)
+            if len(face_images) == 1 : print('resized_image:',img_resized.shape)
 
             '''plt.subplot(1, 2, 1)
             plt.title("Original Image")
-            plt.imshow(img)
+            plt.imshow(img, cmap='gray')
             plt.axis("off")
 
             plt.subplot(1, 2, 2)
             plt.title("Cropped image")
-            plt.imshow(cropped_img)
+            plt.imshow(cropped_img, cmap='gray')
             plt.axis("off")
 
             plt.show()'''
@@ -91,8 +94,10 @@ eigenvalues, eigenvectors = np.linalg.eigh(L)
 # Keep only the positive eigenvalues and their corresponding eigenvectors
 positive_eigenvalue_indices = eigenvalues > 0
 eigenvalues = eigenvalues[positive_eigenvalue_indices]
-eigenvectors = np.dot(vectorized_faces, eigenvectors[:, positive_eigenvalue_indices]) #CANVI
 
+# since we have used the pseudo-covariance matrix, we need to multiply by X to get the eigenvectors of the actual covariance matrix
+eigenvectors = np.dot(vectorized_faces, eigenvectors[:, positive_eigenvalue_indices]) #CANVI
+# shape: 44500, 596
 
 # Sort eigenvalues and corresponding eigenvectors
 sort_indices = np.argsort(eigenvalues)[::-1]
@@ -106,7 +111,7 @@ normalized_eigenvalues = eigenvalues / sum(eigenvalues)
 print("Eigenvalues:", eigenvalues.shape)
 print("Eigenvectors:", eigenvectors.shape)
 
-components = 50
+components = 10
 
 ##### VISUALIZATION OF EIGENVALUES #######
 fig, axs = plt.subplots(1, 2, figsize=(12, 5))
@@ -130,10 +135,12 @@ plt.show()
 # Number of principal components to keep
 num_components = 10
 
-print("SHAPES of projection")
-print(vectorized_faces.shape)
-print(normalized_eigenvectors.shape)
+print("\nSHAPES for projection")
+print(vectorized_faces.shape) # original images vectorized --> 44500, 597 --> 597 images of 44500 pixels each
+print(normalized_eigenvectors.shape) # shape = 44500, 596 --> 596 vectors of 44500 dimensions
 print("")
+
+
 
 print("Shape of vectorized_faces:", vectorized_faces.shape)
 print("Shape of normalized_eigenvectors:", normalized_eigenvectors[:, :num_components].shape) #CANVI -> NORMALIZED
@@ -141,17 +148,19 @@ print("Shape of normalized_eigenvectors:", normalized_eigenvectors[:, :num_compo
 projected_images = np.dot(vectorized_faces.T, normalized_eigenvectors[:, :num_components]) #CANVI -> NORMALIZED !! AQUI PETA PER DIMENSIONS
 print('projected images shape', projected_images.shape)
 
-for i in range(num_components): # view projected face
-    face = projected_images[:, i].reshape(target_height, target_width)
+'''for i in range(num_components): # view projected face
+    face = projected_images[:, i].reshape(target_height, target_width) # !!!
     plt.imshow(face, cmap='gray', vmin=0, vmax=255)
     plt.axis('off')
-    plt.show()
+    plt.show()'''
+
+# RECONSTRUCT THE FACES WITH ONLY 10 COMPONENTS
 
 print('\nSHAPES FOR RECONSTRUCTION')
 print(projected_images.shape)
-print(eigenvectors[:, :num_components].shape)
+print(normalized_eigenvectors[:, :num_components].shape)
 
-reconstructed_images = np.dot(projected_images, eigenvectors[:, :num_components].T)
+reconstructed_images = np.dot(projected_images, normalized_eigenvectors[:, :num_components].T).transpose()
 print('Shape of reconstructed', reconstructed_images.shape)
 
 for i in range(5): # only visualize 5 reconstructions
@@ -191,60 +200,69 @@ for i in range(num_components):
 
 plt.show()'''
 
+# TODO: modes of variation ??
 
 #PLOTTING THE EIGENVALUES OF OUR PCA vs RANDOM (a partir d'aqui ok)
 num_noise_images = 100
 image_height, image_width = target_height, target_width  # Assuming the size of your images
 
-# Generate random noise images
-noise_images = []
-for face in face_images:
-    height, width = face.shape
-    vector_face = face.flatten()
-    np.random.shuffle(vector_face)
-    shuffled_image = vector_face.reshape((height, width))
-    noise_images.append(shuffled_image)
-    
-    if len(noise_images) == 1: # display 1 example of face image to randomized noisy image
-        fig, axs = plt.subplots(1, 2, figsize=(10, 4))
+num_iterations = 10
 
-        axs[0].imshow(face, cmap='gray', vmin=0, vmax=255)
-        axs[0].set_title('Original Image')
-        axs[0].axis('off')
+plt.figure(figsize=(10, 6))
 
-        axs[1].imshow(shuffled_image, cmap='gray', vmin=0, vmax=255)
-        axs[1].set_title('Noise-like Image')
-        axs[1].axis('off')
-        plt.show()
+for i in range(num_iterations):
+    print('Iteration =', i)
+    # Generate random noise images --> TODO: fer-ho un parell de cops (bootstraping)
+    noise_images = []
+    for face in face_images:
+        height, width = face.shape
+        vector_face = face.flatten()
+        np.random.shuffle(vector_face)
+        shuffled_image = vector_face.reshape((height, width))
+        noise_images.append(shuffled_image)
+        
+        '''if len(noise_images) == 1: # display 1 example of face image to randomized noisy image
+            fig, axs = plt.subplots(1, 2, figsize=(10, 4))
 
-print('shape of noisy images:', noise_images[0].shape)
-random_noise_images = np.array(noise_images)
-vectorized_noise_images = random_noise_images.reshape((random_noise_images.shape[0], -1)).transpose()
+            axs[0].imshow(face, cmap='gray', vmin=0, vmax=255)
+            axs[0].set_title('Original Image')
+            axs[0].axis('off')
 
-print('\nComputing eigendecomposition for randomized images...')
-r_L = np.dot(vectorized_noise_images.T, vectorized_noise_images)
-r_eigenvalues, r_eigenvectors = np.linalg.eigh(r_L)
+            axs[1].imshow(shuffled_image, cmap='gray', vmin=0, vmax=255)
+            axs[1].set_title('Noise-like Image')
+            axs[1].axis('off')'''
+        #plt.show()
 
-# Keep only the positive eigenvalues and their corresponding eigenvectors
-positive_eigenvalue_indices = r_eigenvalues > 0
-print('Number of positive eigenvalues for noisy images:', len(positive_eigenvalue_indices))
+    # print('shape of noisy images:', noise_images[0].shape)
+    random_noise_images = np.array(noise_images)
+    vectorized_noise_images = random_noise_images.reshape((random_noise_images.shape[0], -1)).transpose()
 
-r_eigenvalues = r_eigenvalues[positive_eigenvalue_indices]
-r_eigenvectors = r_eigenvectors[:, positive_eigenvalue_indices]
+    # print('\nComputing eigendecomposition for randomized images...')
+    r_L = np.dot(vectorized_noise_images.T, vectorized_noise_images)
+    r_eigenvalues, r_eigenvectors = np.linalg.eigh(r_L)
 
-# Sort eigenvalues and corresponding eigenvectors
-sort_indices = np.argsort(r_eigenvalues)[::-1]
-r_eigenvalues = r_eigenvalues[sort_indices]
-r_eigenvectors = r_eigenvectors[:, sort_indices]
+    # Keep only the positive eigenvalues and their corresponding eigenvectors
+    positive_eigenvalue_indices = r_eigenvalues > 0
+    # print('Number of positive eigenvalues for noisy images:', len(positive_eigenvalue_indices))
 
-r_normalized_eigenvectors = r_eigenvectors / np.linalg.norm(r_eigenvectors, axis=0)
-r_normalized_eigenvalues = r_eigenvalues / sum(r_eigenvalues)
+    r_eigenvalues = r_eigenvalues[positive_eigenvalue_indices]
+    r_eigenvectors = r_eigenvectors[:, positive_eigenvalue_indices]
 
-print('Random eigenvalues', r_eigenvalues.shape)
-print('Random eigenvectors', r_eigenvectors.shape)
+    # Sort eigenvalues and corresponding eigenvectors
+    sort_indices = np.argsort(r_eigenvalues)[::-1]
+    r_eigenvalues = r_eigenvalues[sort_indices]
+    r_eigenvectors = r_eigenvectors[:, sort_indices]
+
+    r_normalized_eigenvectors = r_eigenvectors / np.linalg.norm(r_eigenvectors, axis=0)
+    r_normalized_eigenvalues = r_eigenvalues / sum(r_eigenvalues)
+
+    # print('Random eigenvalues', r_eigenvalues.shape)
+    # print('Random eigenvectors', r_eigenvectors.shape)
+
+    plt.plot(range(1, components + 1), r_normalized_eigenvalues[:components], marker='o', linestyle='-', label=f'Iteration {i}')
 
 ###### Plots for eigenvalue visualization #####
-fig, axs = plt.subplots(1, 2, figsize=(12, 5))
+'''fig, axs = plt.subplots(1, 2, figsize=(12, 5))
 axs[0].bar(range(1, components + 1), r_normalized_eigenvalues[:components])
 axs[0].set_title("Eigenvalues (Bar Plot)")
 axs[0].set_xlabel("Eigenvalue Index")
@@ -256,11 +274,11 @@ axs[1].set_xlabel("Eigenvalue Index")
 axs[1].set_ylabel("Eigenvalue Magnitude")
 fig.suptitle("Eigenvalues of randomized images")
 plt.tight_layout()
-plt.show()
+plt.show()'''
 ################################################
 
 # Comparison of line plots --> check statistically significant components
-plt.plot(range(1, components + 1), r_normalized_eigenvalues[:components], marker='o', linestyle='-', label='Randomized Images')
+
 plt.plot(range(1, components + 1), normalized_eigenvalues[:components], marker='o', linestyle='-', label='Original Data')
 
 plt.title("Eigenvalues Comparison (normalized w.r.t. total variance explained)")

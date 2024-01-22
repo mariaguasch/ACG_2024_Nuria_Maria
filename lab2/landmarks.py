@@ -14,10 +14,13 @@ image_names = landmarks['fname'].unique()
 # Create a list to store concatenated coordinates for each image
 concatenated_coordinates_list = []
 
+faces_landmarks = [] # my_list
+
 # Iterate over each image
 for image_name in image_names:
     # Select rows corresponding to the current image
     image_landmarks = landmarks[landmarks['fname'] == image_name]
+    faces_landmarks.append(image_landmarks[['x', 'y']].values) #
     
     # Extract x and y coordinates
     x_coordinates = image_landmarks['x'].values
@@ -29,10 +32,50 @@ for image_name in image_names:
     # Append to the list
     concatenated_coordinates_list.append(concatenated_coordinates)
 
-# Convert the list to a NumPy array
+'''# Convert the list to a NumPy array
 landmarks = np.array(concatenated_coordinates_list).T
 print(landmarks)
-print(landmarks.shape)
+print(landmarks.shape)'''
+
+####
+landmark_coordinates = np.array(faces_landmarks)
+arr_transposed = np.transpose(landmark_coordinates, (1, 2, 0))
+landmarks = arr_transposed #shape (189, 2, 597)
+####
+
+reference_landmarks = landmarks[:, :, 0]  # Choose one face as the reference
+aligned_landmarks = np.zeros_like(landmarks)
+
+# perform procruster to align/center all faces
+for i in range(597):
+    _, _, aligned_landmarks[:, :, i] = procrustes(reference_landmarks, landmarks[:, :, i])
+
+vect_matrix = [] # matrix containing a column for each face
+
+for i in range(597): 
+    
+    # visualize the landmarks for one example face
+    if i==0:
+        landmarks[:, 1, i] = -landmarks[:, 1, i] # to undo the flip around the x-axis
+        plt.scatter(landmarks[:, 0, i], landmarks[:, 1, i])
+        plt.title(f"Landmarks for Face {i+1}")
+        plt.xlabel("X-coordinate")
+        plt.ylabel("Y-coordinate")
+        plt.show()
+
+    # convert coordinates to matrix of column vectors
+    x_coords = landmarks[:, 0, i]
+    y_coords = landmarks[:, 1, i]
+    coords_array = np.concatenate([x_coords, y_coords])
+    vect_matrix.append(coords_array)
+
+land
+print(coords)
+    
+    
+
+
+exit()
 
 num_faces = landmarks.shape[1]
 num_landmarks = landmarks.shape[0]//2
@@ -41,9 +84,13 @@ num_landmarks = landmarks.shape[0]//2
 
 # Reshape the landmarks to (num_faces, num_landmarks, 2)
 landmarks_reshaped = landmarks.reshape((num_faces, num_landmarks, 2))
+print('landmarks_reshaped shape', landmarks_reshaped.shape)
 
 # Choose one face as the reference
-reference_landmarks = landmarks_reshaped[0]
+reference_landmarks = landmarks_reshaped[0, 0, :]
+print(reference_landmarks)
+
+exit()
 
 # Align/center all faces using Procrustes analysis
 aligned_landmarks = np.zeros_like(landmarks_reshaped)
