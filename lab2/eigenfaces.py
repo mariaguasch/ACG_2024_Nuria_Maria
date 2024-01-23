@@ -111,41 +111,51 @@ normalized_eigenvalues = eigenvalues / sum(eigenvalues)
 print("Eigenvalues:", eigenvalues.shape)
 print("Eigenvectors:", eigenvectors.shape)
 
-components = 10
+num_components = 10
+
+##### VISUALIZATION OF EIGENFACES ####
+counter = 0
+for eig_face in normalized_eigenvectors.transpose():
+    face = eig_face.reshape(target_height, target_width)
+    plt.title("Eigenface")
+    plt.imshow(face, cmap='gray')
+    plt.axis("off")
+    plt.show()
+    counter +=1
+    if counter == num_components: break
+
+######################################
+
+
 
 ##### VISUALIZATION OF EIGENVALUES #######
 fig, axs = plt.subplots(1, 2, figsize=(12, 5))
 
 # Bar plot for eigenvalues
-axs[0].bar(range(1, components + 1), normalized_eigenvalues[:components])
+axs[0].bar(range(1, num_components + 1), normalized_eigenvalues[:num_components])
 axs[0].set_title("Eigenvalues (Bar Plot)")
 axs[0].set_xlabel("Eigenvalue Index")
-axs[0].set_ylabel("Eigenvalue Magnitude")
+axs[0].set_ylabel("Ratio of explained variance")
 
 # Plot the eigenvalues as a line plot
-axs[1].plot(range(1, components + 1), normalized_eigenvalues[:components], marker='o', linestyle='-')
+axs[1].plot(range(1, num_components + 1), normalized_eigenvalues[:num_components], marker='o', linestyle='-')
 axs[1].set_title("Eigenvalues (Line Plot)")
 axs[1].set_xlabel("Eigenvalue Index")
-axs[1].set_ylabel("Eigenvalue Magnitude")
+axs[1].set_ylabel("Ratio of explained variance")
 
 fig.suptitle("Eigenvalues of original images")
 plt.tight_layout()
 plt.show()
-
-# Number of principal components to keep
-num_components = 10
 
 print("\nSHAPES for projection")
 print(vectorized_faces.shape) # original images vectorized --> 44500, 597 --> 597 images of 44500 pixels each
 print(normalized_eigenvectors.shape) # shape = 44500, 596 --> 596 vectors of 44500 dimensions
 print("")
 
-
-
 print("Shape of vectorized_faces:", vectorized_faces.shape)
-print("Shape of normalized_eigenvectors:", normalized_eigenvectors[:, :num_components].shape) #CANVI -> NORMALIZED
+print("Shape of normalized_eigenvectors:", normalized_eigenvectors[:, :num_components].shape)
 
-projected_images = np.dot(vectorized_faces.T, normalized_eigenvectors[:, :num_components]) #CANVI -> NORMALIZED !! AQUI PETA PER DIMENSIONS
+projected_images = np.dot(vectorized_faces.T, normalized_eigenvectors[:, :num_components])
 print('projected images shape', projected_images.shape)
 
 '''for i in range(num_components): # view projected face
@@ -166,43 +176,12 @@ print('Shape of reconstructed', reconstructed_images.shape)
 for i in range(5): # only visualize 5 reconstructions
     face = (reconstructed_images[:, i]).reshape(target_height, target_width) + mean_face
     plt.imshow(face, cmap='gray', vmin=0, vmax=255)
+    plt.title('Reconstructed with 10 most significant components')
     plt.axis('off')
     plt.show()
 
 
-'''# Select the top 'num_components' eigenvectors and projections
-top_eigenvectors = normalized_eigenvectors[:, :num_components]
-top_projections = projections[:, :num_components]
-top_eigenvalues = eigenvalues[:num_components]
-
-# Reconstruct the faces using the top eigenvectors and projections
-reconstructed_faces = np.dot(top_projections, top_eigenvectors.T)
-print('Reconstructed faces:', reconstructed_faces.shape)
-
-# Reshape the reconstructed faces to their original size
-reshaped_faces = reconstructed_faces.T.reshape((num_components, target_height, target_width))
-
-# Add the mean face back to obtain the final reconstructed faces
-final_reconstructed_faces = reshaped_faces + mean_face.flatten()
-
-# Display the original and reconstructed faces for visualization
-plt.figure(figsize=(12, 6))
-for i in range(num_components):
-    plt.subplot(2, num_components, i + 1)
-    plt.imshow(face_images_array[i], cmap='gray', vmin=0, vmax=255)
-    plt.title(f"Original {i + 1}")
-    plt.axis('off')
-
-    plt.subplot(2, num_components, num_components + i + 1)
-    plt.imshow(final_reconstructed_faces[i], cmap='gray', vmin=0, vmax=255)
-    plt.title(f"Reconstructed {i + 1}")
-    plt.axis('off')
-
-plt.show()'''
-
-# TODO: modes of variation ??
-
-#PLOTTING THE EIGENVALUES OF OUR PCA vs RANDOM (a partir d'aqui ok)
+#PLOTTING THE EIGENVALUES OF OUR PCA vs RANDOM
 num_noise_images = 100
 image_height, image_width = target_height, target_width  # Assuming the size of your images
 
@@ -212,7 +191,8 @@ plt.figure(figsize=(10, 6))
 
 for i in range(num_iterations):
     print('Iteration =', i)
-    # Generate random noise images --> TODO: fer-ho un parell de cops (bootstraping)
+
+    # Generate random noise images
     noise_images = []
     for face in face_images:
         height, width = face.shape
@@ -259,7 +239,7 @@ for i in range(num_iterations):
     # print('Random eigenvalues', r_eigenvalues.shape)
     # print('Random eigenvectors', r_eigenvectors.shape)
 
-    plt.plot(range(1, components + 1), r_normalized_eigenvalues[:components], marker='o', linestyle='-', label=f'Iteration {i}')
+    plt.plot(range(1, num_components + 1), r_normalized_eigenvalues[:num_components], marker='o', linestyle='-', label=f'Iteration {i}')
 
 ###### Plots for eigenvalue visualization #####
 '''fig, axs = plt.subplots(1, 2, figsize=(12, 5))
@@ -279,11 +259,11 @@ plt.show()'''
 
 # Comparison of line plots --> check statistically significant components
 
-plt.plot(range(1, components + 1), normalized_eigenvalues[:components], marker='o', linestyle='-', label='Original Data')
+plt.plot(range(1, num_components + 1), normalized_eigenvalues[:num_components], marker='o', linestyle='-', label='Original Data')
 
 plt.title("Eigenvalues Comparison (normalized w.r.t. total variance explained)")
 plt.xlabel("Eigenvalue Index")
-plt.ylabel("Eigenvalue Magnitude")
+plt.ylabel("Ratio of explained variance")
 
 plt.legend()
 plt.show()

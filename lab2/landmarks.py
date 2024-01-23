@@ -10,6 +10,8 @@ from scipy.spatial import procrustes
 landmarks = pd.read_csv("dataset_chicago/landmarks/landmark_templates_01-29.22/Template Database CSV 012922.csv")
 
 image_names = landmarks['fname'].unique()
+num_faces = 597
+num_landmarks = 189
 
 # Create a list to store concatenated coordinates for each image
 concatenated_coordinates_list = []
@@ -41,6 +43,7 @@ print(landmarks.shape)'''
 landmark_coordinates = np.array(faces_landmarks)
 arr_transposed = np.transpose(landmark_coordinates, (1, 2, 0))
 landmarks = arr_transposed #shape (189, 2, 597)
+print('landmarks:', landmarks.shape)
 ####
 
 reference_landmarks = landmarks[:, :, 0]  # Choose one face as the reference
@@ -48,94 +51,37 @@ aligned_landmarks = np.zeros_like(landmarks)
 
 # perform procruster to align/center all faces
 for i in range(597):
-    _, _, aligned_landmarks[:, :, i] = procrustes(reference_landmarks, landmarks[:, :, i])
+    _, aligned_landmarks[:, :, i], m = procrustes(reference_landmarks, landmarks[:, :, i])
 
-vect_matrix = [] # matrix containing a column for each face
+vect_landmarks = [] # matrix containing a column for each face
 
 for i in range(597): 
     
     # visualize the landmarks for one example face
-    if i==0:
-        landmarks[:, 1, i] = -landmarks[:, 1, i] # to undo the flip around the x-axis
-        plt.scatter(landmarks[:, 0, i], landmarks[:, 1, i])
+    if i in [0, 1, 2]:
+        # aligned_landmarks[:, 1, i] = -aligned_landmarks[:, 1, i] # to undo the flip around the x-axis
+        plt.scatter(aligned_landmarks[:, 0, i], aligned_landmarks[:, 1, i])
         plt.title(f"Landmarks for Face {i+1}")
         plt.xlabel("X-coordinate")
         plt.ylabel("Y-coordinate")
-        plt.show()
+        # plt.show()
 
     # convert coordinates to matrix of column vectors
-    x_coords = landmarks[:, 0, i]
-    y_coords = landmarks[:, 1, i]
+    x_coords = aligned_landmarks[:, 0, i]
+    y_coords = - aligned_landmarks[:, 1, i] # we add the - sign to have the faces upright
     coords_array = np.concatenate([x_coords, y_coords])
-    vect_matrix.append(coords_array)
+    vect_landmarks.append(coords_array)
 
-land
-print(coords)
-    
-    
-
-
-exit()
-
-num_faces = landmarks.shape[1]
-num_landmarks = landmarks.shape[0]//2
-
-#A PARTIR DAQUI SHA DE MIRAR COM FER PROCRUSTERS
-
-# Reshape the landmarks to (num_faces, num_landmarks, 2)
-landmarks_reshaped = landmarks.reshape((num_faces, num_landmarks, 2))
-print('landmarks_reshaped shape', landmarks_reshaped.shape)
-
-# Choose one face as the reference
-reference_landmarks = landmarks_reshaped[0, 0, :]
-print(reference_landmarks)
-
-exit()
-
-# Align/center all faces using Procrustes analysis
-aligned_landmarks = np.zeros_like(landmarks_reshaped)
-for i in range(num_faces):
-    _, _, aligned_landmarks[i] = procrustes(reference_landmarks, landmarks_reshaped[i])
-
-# Reshape aligned landmarks back to (num_faces, num_landmarks * 2)
-aligned_landmarks_flat = aligned_landmarks.reshape((num_faces, -1))
-
-for i in range(5):
-    # Plot original landmarks
-    plt.scatter(landmarks_reshaped[i, :, 0], landmarks_reshaped[i, :, 1], label='Original', marker='o')
-    
-    # Plot aligned landmarks
-    plt.scatter(aligned_landmarks[i, :, 0], aligned_landmarks[i, :, 1], label='Aligned', marker='x')
-    
-    plt.title(f"Landmarks for Face {i+1}")
-    plt.xlabel("X-coordinate")
-    plt.ylabel("Y-coordinate")
-    plt.legend()
-    plt.show()
-
-'''
-for i in range(5): # visualize the landmarks for each face
-    landmarks[:, 1, i] = -landmarks[:, 1, i]
-    plt.scatter(landmarks[:, 0, i], landmarks[:, 1, i])
-    plt.title(f"Landmarks for Face {i+1}")
-    plt.xlabel("X-coordinate")
-    plt.ylabel("Y-coordinate")
-    plt.show()'''
-
-'''
-# Reshape aligned landmarks to a 2D array for further processing
-num_landmarks, num_coordinates, num_samples = aligned_landmarks.shape
-reshaped_landmarks = aligned_landmarks.reshape((num_landmarks * num_coordinates, num_samples)).T
+vect_landmarks = np.array(vect_landmarks).transpose()
+print(vect_landmarks.shape)
 
 # Subtract the mean landmark coordinates from each individual face's landmarks
-mean_landmark = np.mean(reshaped_landmarks, axis=0)
-subtracted_landmarks = reshaped_landmarks - mean_landmark
-
-# Vectorize the subtracted landmarks
-vectorized_landmarks = subtracted_landmarks.transpose()
+mean_landmark = np.mean(vect_landmarks, axis=1)
+subtracted_landmarks = vect_landmarks - mean_landmark[:, np.newaxis]
+print('substracted_landmarks:', subtracted_landmarks.shape)
 
 # Compute pseudo-covariance matrix L = Xt*X
-L_landmarks = np.dot(vectorized_landmarks.T, vectorized_landmarks)
+L_landmarks = np.dot(subtracted_landmarks, subtracted_landmarks.T)
 
 # Compute eigenvalues and eigenvectors
 eigenvalues_landmarks, eigenvectors_landmarks = np.linalg.eigh(L_landmarks)
@@ -156,11 +102,27 @@ normalized_eigenvectors_landmarks = eigenvectors_landmarks / np.linalg.norm(eige
 normalized_eigenvalues_landmarks = eigenvalues_landmarks / sum(eigenvalues_landmarks)
 
 # Print shapes of eigenvalues and eigenvectors
-print("Eigenvalues (Landmarks):", eigenvalues_landmarks.shape)
-print("Eigenvectors (Landmarks):", eigenvectors_landmarks.shape)
+print("Eigenvalues (Landmarks):", normalized_eigenvalues_landmarks.shape)
+print("Eigenvectors (Landmarks):", normalized_eigenvectors_landmarks.shape)
 
-# Number of principal components to keep
-components_landmarks = 10
+components_landmarks = 10 # number of components to keep
+
+##### VISUALIZATION OF EIGENFACES ####
+count = 0
+plt.close()
+
+for eig_face in normalized_eigenvectors_landmarks.transpose():
+    plt.title("Eigenface", count + 1)
+    plt.scatter(eig_face[:189], eig_face[189:], color = 'blue')
+    plt.scatter(aligned_landmarks[:, 0, 0], - aligned_landmarks[:, 1, 0], color = 'red')
+    plt.axis("off")
+    plt.show()
+    count +=1
+    if count == components_landmarks: break
+
+######################################
+
+plt.close()
 
 # Visualization of eigenvalues for landmarks
 plt.bar(range(1, components_landmarks + 1), normalized_eigenvalues_landmarks[:components_landmarks])
@@ -169,8 +131,37 @@ plt.xlabel("Eigenvalue Index")
 plt.ylabel("Eigenvalue Magnitude")
 plt.show()
 
+projected_images = np.dot(vect_landmarks.T, normalized_eigenvectors_landmarks[:, :components_landmarks])
+reconstructed_images = np.dot(projected_images, normalized_eigenvectors_landmarks[:, :components_landmarks].T).transpose() + mean_landmark[:, np.newaxis]
+print('reconstructed shape', reconstructed_images.shape)
+
+for i in range(3): 
+    plt.scatter(reconstructed_images[:189, i], reconstructed_images[189:, i])
+    plt.title(f"Reconstructed {i+1}")
+    plt.xlabel("X-coordinate")
+    plt.ylabel("Y-coordinate")
+    plt.show()
+
 # Additional analysis to determine the meaningfulness of the extracted bases can be done here.
 # Choose a criterion to validate the 10 extracted bases, as mentioned in the project requirements.
 
 
-'''
+# MODES OF VARIATION
+num_faces_to_visualize = 3
+
+fig, axes = plt.subplots(nrows=num_faces_to_visualize, ncols=components_landmarks, figsize=(15, 5))
+
+for i in range(components_landmarks):
+    for j in range(num_faces_to_visualize):
+        
+        # do reconstruction with increasing subset of basis
+        reconstructed_face = mean_landmark + np.dot(projected_images[j, :i+1], normalized_eigenvectors_landmarks[:, :i+1].T)
+        
+        reconstructed_face = reconstructed_face.reshape(2, num_landmarks).T
+    
+        axes[j, i].scatter(reconstructed_face[:, 0], reconstructed_face[:, 1])
+        axes[j, i].set_title(f"Basis {i+1}")
+        axes[j, i].axis("off")
+
+plt.tight_layout()
+plt.show()
