@@ -112,7 +112,7 @@ count = 0
 plt.close()
 
 for eig_face in normalized_eigenvectors_landmarks.transpose():
-    plt.title("Eigenface", count + 1)
+    plt.title(f"Eigenface{count + 1}")
     plt.scatter(eig_face[:189], eig_face[189:], color = 'blue')
     plt.scatter(aligned_landmarks[:, 0, 0], - aligned_landmarks[:, 1, 0], color = 'red')
     plt.axis("off")
