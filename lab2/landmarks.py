@@ -57,14 +57,14 @@ vect_landmarks = [] # matrix containing a column for each face
 
 for i in range(597): 
     
-    # visualize the landmarks for one example face
-    if i in [0, 1, 2]:
+    # visualize the landmarks for some example faces
+    if i in [0, 1]:
         # aligned_landmarks[:, 1, i] = -aligned_landmarks[:, 1, i] # to undo the flip around the x-axis
-        plt.scatter(aligned_landmarks[:, 0, i], aligned_landmarks[:, 1, i])
+        plt.scatter(aligned_landmarks[:, 0, i], - aligned_landmarks[:, 1, i])
         plt.title(f"Landmarks for Face {i+1}")
         plt.xlabel("X-coordinate")
         plt.ylabel("Y-coordinate")
-        # plt.show()
+        plt.show()
 
     # convert coordinates to matrix of column vectors
     x_coords = aligned_landmarks[:, 0, i]
@@ -128,7 +128,7 @@ plt.close()
 plt.bar(range(1, components_landmarks + 1), normalized_eigenvalues_landmarks[:components_landmarks])
 plt.title("Eigenvalues of Aligned Landmarks")
 plt.xlabel("Eigenvalue Index")
-plt.ylabel("Eigenvalue Magnitude")
+plt.ylabel("Ratio of variance (normalized eigenvalue)")
 plt.show()
 
 projected_images = np.dot(vect_landmarks.T, normalized_eigenvectors_landmarks[:, :components_landmarks])
