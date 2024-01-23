@@ -117,7 +117,7 @@ num_components = 10
 counter = 0
 for eig_face in normalized_eigenvectors.transpose():
     face = eig_face.reshape(target_height, target_width)
-    plt.title("Eigenface")
+    plt.title(f"Eigenface {counter + 1}")
     plt.imshow(face, cmap='gray')
     plt.axis("off")
     plt.show()
