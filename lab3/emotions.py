@@ -67,8 +67,8 @@ def plot_bases(bases):
 
 
 dir_challenge = ""
-matrices = loadmat(r'/Users/nuriacodina/Desktop/UPF/QUART/2N_TRIM/FGA/ACG_2024_Nuria_Maria/lab3/Lab_3/matrices.mat')
-#matrices = loadmat(r'C:\Users\guasc\Documentos\GitHub\ACG_2024_Nuria_Maria\lab3\Lab_3\matrices.mat') # canviar !!!
+# matrices = loadmat(r'/Users/nuriacodina/Desktop/UPF/QUART/2N_TRIM/FGA/ACG_2024_Nuria_Maria/lab3/Lab_3/matrices.mat')
+matrices = loadmat("matrices.mat")
 
 similarity_matrix = matrices['simScores'][0][0]['similarityM']
 consistency_matrix = matrices['simScores'][0][0]['consistencyM']
