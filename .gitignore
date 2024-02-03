@@ -162,4 +162,5 @@ cython_debug/
 face_images.npz
 vectorized_faces.pkl
 AGC_2024_Lab1.2_eigenfaces_Nuria_Maria.zip
+
 lab2/
