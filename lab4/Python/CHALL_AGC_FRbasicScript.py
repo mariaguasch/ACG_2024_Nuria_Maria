@@ -3,9 +3,14 @@ import numpy as np
 # from imageio import imread
 from imageio.v2 import imread
 from scipy.io import loadmat
+import pandas as pd
 import random
 import time
 import itertools
+from matplotlib import pyplot as plt
+from matplotlib.patches import Rectangle
+
+import cv2 as cv
 
 
 def CHALL_AGC_ComputeRecognScores(auto_ids, true_ids):
@@ -51,6 +56,48 @@ def my_face_recognition_function(A, my_FRmodel):
     # Function to implement
     print()
 
+def my_face_detection(grayscale, name):
+    # Function to implement
+    haar_cascade = cv.CascadeClassifier('haarcascade_frontalface_default.xml')
+    eye_cascade = cv.CascadeClassifier('haarcascade_eye.xml')
+    nose_cascade = cv.CascadeClassifier('haarcascade_mcs_nose.xml')
+    mouth_cascade = cv.CascadeClassifier('haarcascade_mcs_mouth.xml')    
+    
+    detected_faces = haar_cascade.detectMultiScale(grayscale, scaleFactor=1.2, minNeighbors=3) 
+    # scaleFactor: how much the image is reduced at each step. 1.05 --> 5%
+
+    valid_faces = []
+
+    # Iterate through all the detected faces, to then use other classifiers to get better accuracy
+    for (x, y, w, h) in detected_faces: 
+        face_roi = grayscale[y:y+h, x:x+w]
+        detected_eyes = eye_cascade.detectMultiScale(face_roi)
+        detected_nose = nose_cascade.detectMultiScale(face_roi)
+        detected_mouth = mouth_cascade.detectMultiScale(face_roi)
+    
+        all_detected =  len(detected_eyes) + len(detected_mouth) + len(detected_nose)
+        
+        # We have created a "score" which tells us how many features have been detected in a face 
+        # If at least 3 of them are, we consider this face as valid
+
+        if all_detected >= 3:
+            valid_faces.append([int(x), int(y), int(x + w), int(y + h), all_detected])
+
+    valid_faces = sorted(valid_faces, key=lambda x: x[4], reverse=True)
+    # We only keep the top 2 faces with highest score, meaning that more of its features (eyes, mouth, nose) have been detected
+
+    valid_faces = valid_faces[:2]
+
+    cropped_images = []
+    for face in valid_faces:
+        cropped_image = grayscale[face[1]:face[3], face[0]:face[2]]
+        cropped_images.append(cropped_image)
+
+
+    valid_faces = [[x[0], x[1], x[2], x[3]] for x in valid_faces]
+
+    return valid_faces
+
 
 # Basic script for Face Recognition Challenge
 # --------------------------------------------------------------------
@@ -91,7 +138,8 @@ for idx, im in enumerate(imageName):
         # Timer on
         ###############################################################
         # Your face recognition function goes here.It must accept 2 input parameters:
-
+        #1. FACE DETECTION
+        #2. FACE RECOGNITION
         # 1. the input image A
         # 2. the recognition model
 
@@ -100,8 +148,25 @@ for idx, im in enumerate(imageName):
         # a) A number between 1 and 80 (representing one of the identities in the training set)
         # b) A "-1" indicating that none of the 80 users is present in the input image
 
-        autom_id = my_face_recognition_function(A, my_FRmodel)
 
+        #PAS 1 -> FACE DETECTION (lab 1!!!!!!)
+        if not len(A.shape) == 2:
+            grayscale = cv.cvtColor(A, cv.COLOR_BGR2GRAY)
+        else:
+            # Handle case where image is already grayscale
+            grayscale = A
+
+        det_faces = my_face_detection(grayscale, im)
+
+        #PAS 2 -> FACE RECOGNITION AMB MODEL ENTRENAT -> importar pickle!!!
+
+        #Per cada image retornada -> cridar recognition function -> comprovar els dos valors -> el mes gran TORNARLO
+        ids = []
+        for image in det_faces:
+            ids.append(my_face_recognition_function(image, my_FRmodel))
+
+        autom_id = max(ids)
+        
         tt = time.time() - ti
         total_time = total_time + tt
     except:
