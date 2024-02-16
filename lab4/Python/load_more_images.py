@@ -2,7 +2,13 @@ import requests
 import os
 from bs4 import BeautifulSoup
 from celebrities import celebrities
+    return False    
+if internet_connection():
+    print("The Internet is connected.")
+else:
+    print("The Internet is not connected.")
 
+internet_connection
 def get_thumbnails_google(search_term, count=50):
     thumbnails = []
     try:
