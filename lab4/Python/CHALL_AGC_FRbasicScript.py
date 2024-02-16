@@ -96,7 +96,7 @@ def my_face_detection(grayscale, name):
 
     valid_faces = [[x[0], x[1], x[2], x[3]] for x in valid_faces]
 
-    return valid_faces
+    return valid_faces, cropped_images
 
 
 # Basic script for Face Recognition Challenge
@@ -156,7 +156,7 @@ for idx, im in enumerate(imageName):
             # Handle case where image is already grayscale
             grayscale = A
 
-        det_faces = my_face_detection(grayscale, im)
+        det_faces, cropped_images = my_face_detection(grayscale, im)
 
         #PAS 2 -> FACE RECOGNITION AMB MODEL ENTRENAT -> importar pickle!!!
 
