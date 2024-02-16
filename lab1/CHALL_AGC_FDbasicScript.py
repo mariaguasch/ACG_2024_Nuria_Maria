@@ -5,6 +5,7 @@ import pandas as pd
 import time
 from matplotlib import pyplot as plt
 from matplotlib.patches import Rectangle
+import os
 
 import cv2 as cv
 
@@ -47,7 +48,7 @@ def CHALL_AGC_ComputeDetScores(DetectionSTR, AGC_Challenge1_STR, show_figures):
                     bbox = np.array(AGC_Challenge1_STR['faceBox'][i][k1], dtype=int)
                     fb = Rectangle((bbox[0], bbox[3]), bbox[2] - bbox[0], bbox[1] - bbox[3], linewidth=4, edgecolor='b',
                                    facecolor='none')
-                    ax.add_patch(fb)
+                    # ax.add_patch(fb)
             for k2 in range(0, len(DetectionSTR[i])):
                 if len(DetectionSTR[i]) != 0:
                     bbox = np.array(DetectionSTR[i][k2], dtype=int)
@@ -160,8 +161,10 @@ AGC_Challenge1_TRAINING = pd.DataFrame(AGC_Challenge1_TRAINING, columns=columns)
 
 # Provide the path to the input images, for example
 # 'C:/AGC_Challenge/images/'
-imgPath = "TRAINING/"
-AGC_Challenge1_TRAINING['imageName'] = imgPath + AGC_Challenge1_TRAINING['imageName'].astype(str)
+imgPath = "/home/maria/Documentos/GitHub/ACG_2024_Nuria_Maria/lab4/Python/photos/Alec Baldwin"
+imgFiles = [os.path.join(imgPath, file) for file in os.listdir(imgPath) if file.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp'))]
+# Create a DataFrame with the image filenames
+AGC_Challenge1_TRAINING = pd.DataFrame({'imageName': imgFiles})
 # Initialize results structure
 DetectionSTR = []
 
@@ -199,7 +202,7 @@ for idx, im in enumerate(AGC_Challenge1_TRAINING['imageName']):
 
     DetectionSTR.append(det_faces)
 
-FD_score = CHALL_AGC_ComputeDetScores(DetectionSTR, AGC_Challenge1_TRAINING, show_figures=False)
+FD_score = CHALL_AGC_ComputeDetScores(DetectionSTR, AGC_Challenge1_TRAINING, show_figures=True)
 _, rem = divmod(total_time, 3600)
 minutes, seconds = divmod(rem, 60)
 print('F1-score: %.2f, Total time: %2d m %.2f s' % (100 * FD_score, int(minutes), seconds))
