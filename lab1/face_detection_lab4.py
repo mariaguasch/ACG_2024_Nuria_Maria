@@ -6,7 +6,7 @@ import os
 
 import cv2 as cv
 
-def MyFaceDetectionFunction(grayscale, save_folder, original_filename):
+def MyFaceDetectionFunction(grayscale, save_folder, original_filename, faces_not_detected_count):
     # Function to implement
     haar_cascade = cv.CascadeClassifier('haarcascade_frontalface_default.xml')
     eye_cascade = cv.CascadeClassifier('haarcascade_eye.xml')
@@ -36,7 +36,7 @@ def MyFaceDetectionFunction(grayscale, save_folder, original_filename):
     valid_faces = sorted(valid_faces, key=lambda x: x[4], reverse=True)
     # We only keep the top faces with the highest score, meaning that more of its features (eyes, mouth, nose) have been detected
 
-    if valid_faces:
+    if len(valid_faces)>0:
         valid_face = valid_faces[0]  # only keep the largest face
         cropped_image = grayscale[valid_face[1]:valid_face[3], valid_face[0]:valid_face[2]]
 
@@ -45,20 +45,22 @@ def MyFaceDetectionFunction(grayscale, save_folder, original_filename):
         os.makedirs(save_path, exist_ok=True)
         filename = os.path.join(save_path, f"cropped_{os.path.basename(original_filename)}")
         imwrite(filename, cropped_image)
-        print(f"Cropped image saved: {filename}")
+        # print(f"Cropped image saved: {filename}")
 
         valid_faces = [[x[0], x[1], x[2], x[3]] for x in valid_faces]
-        return valid_face
+        return valid_face, faces_not_detected_count
     else:
-        print("No valid faces found.")
-        return None
+        faces_not_detected_count += 1
+        # print("No valid faces found.")
+        return None, faces_not_detected_count
 
 # Provide the path to the directory containing subdirectories with images
 main_directory = "/home/maria/Documentos/GitHub/ACG_2024_Nuria_Maria/lab4/Python/photos"
 
 # Specify the folder to save all cropped images
 save_folder = "/home/maria/Documentos/GitHub/ACG_2024_Nuria_Maria/lab4/cropped_images"
-# HE CANVIAT EL PATH PERQ ES GUARDIN A LA CARPETA DE LAB 4 PERO NO HO HE EXECUTAT, ESTAN DE MOMENT A LA DE LAB 1
+
+faces_not_detected_count = 0
 
 # Iterate through subdirectories (folders) in the main directory
 for folder in os.listdir(main_directory):
@@ -76,30 +78,33 @@ for folder in os.listdir(main_directory):
             if not img_filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
                 continue
 
-            try:
-                ti = time.time()
-                # Timer on
-                ###############################################################
-                # Your face detection function goes here. It must accept a single
-                # input parameter (the input image A) and it must return one or
-                # more bounding boxes corresponding to the facial images found
-                # in image A, specified as [x1 y1 x2 y2]
-                # Each bounding box that is detected will be indicated in a
-                # separate row in det_faces
+            # try:
+            ti = time.time()
+            # Timer on
+            ###############################################################
+            # Your face detection function goes here. It must accept a single
+            # input parameter (the input image A) and it must return one or
+            # more bounding boxes corresponding to the facial images found
+            # in image A, specified as [x1 y1 x2 y2]
+            # Each bounding box that is detected will be indicated in a
+            # separate row in det_faces
 
-                A = imread(img_path)
+            A = imread(img_path)
 
-                if not len(A.shape) == 2:
-                    grayscale = cv.cvtColor(A, cv.COLOR_BGR2GRAY)
-                else:
-                    # Handle case where the image is already grayscale
-                    grayscale = A
+            if not len(A.shape) == 2:
+                grayscale = cv.cvtColor(A, cv.COLOR_BGR2GRAY)
+            else:
+                # Handle case where the image is already grayscale
+                grayscale = A
 
-                det_face = MyFaceDetectionFunction(grayscale, save_folder, img_filename)
+            
+            det_face, faces_not_detected_count = MyFaceDetectionFunction(grayscale, save_folder, img_filename, faces_not_detected_count)
 
-                tt = time.time() - ti
+            tt = time.time() - ti
 
-            except Exception as e:
+            '''except Exception as e:
                 # If the face detection function fails, it will be assumed that no
                 # face was detected for this input image
-                print(f"Caught an exception in {img_path}: {type(e).__name__} - {str(e)}")
+                print(f"Caught an exception in {img_path}: {type(e).__name__} - {str(e)}")'''
+
+print('Faces not detected =', faces_not_detected_count)
