@@ -58,7 +58,7 @@ def MyFaceDetectionFunction(grayscale, save_folder, original_filename, faces_not
 main_directory = "/home/maria/Documentos/GitHub/ACG_2024_Nuria_Maria/lab4/Python/photos"
 
 # Specify the folder to save all cropped images
-save_folder = "/home/maria/Documentos/GitHub/ACG_2024_Nuria_Maria/lab4/cropped_images"
+save_folder = "/home/maria/Documentos/GitHub/ACG_2024_Nuria_Maria/lab4"
 
 faces_not_detected_count = 0
 
