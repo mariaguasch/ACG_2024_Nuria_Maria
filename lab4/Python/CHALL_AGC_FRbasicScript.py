@@ -19,27 +19,31 @@ import cv2
 from torchvision import transforms
 from PIL import Image
 
-# Define your model architecture
+#####################################################################
+
+# Define model architecture
 class IdEstimationModel(nn.Module):
     def __init__(self, num_classes):
         super(IdEstimationModel, self).__init__()
+
+
         self.features = nn.Sequential(
-            nn.Conv2d(3, 32, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.AvgPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(32, 64, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.AvgPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(64, 128, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.AvgPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(128, 256, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.AvgPool2d(kernel_size=2, stride=2)
-        )
+          nn.Conv2d(1, 32, kernel_size=3, padding=1),
+          nn.ReLU(inplace=True),
+          nn.AvgPool2d(kernel_size=2, stride=2),
+          nn.Conv2d(32, 64, kernel_size=3, padding=1),
+          nn.ReLU(inplace=True),
+          nn.AvgPool2d(kernel_size=2, stride=2),
+          # nn.Conv2d(64, 128, kernel_size=3, padding=1),
+          # nn.ReLU(inplace=True),
+          nn.AvgPool2d(kernel_size=2, stride=2),
+          # nn.Conv2d(128, 256, kernel_size=3, padding=1),
+          # nn.ReLU(inplace=True),
+          nn.AvgPool2d(kernel_size=2, stride=2)
+      )
 
         self.classifier = nn.Sequential(
-            nn.Linear(256 * 9 * 9, 256),
+            nn.Linear(64 * 9 * 9, 256),
             nn.ReLU(inplace=True),
             nn.Dropout(p=0.5),
             nn.Linear(256, num_classes)
@@ -52,7 +56,8 @@ class IdEstimationModel(nn.Module):
         return x
 
 transform = transforms.Compose([
-    transforms.Resize((150, 150)),  # Resize the image to a specific size
+    transforms.Grayscale(),  # Convert to grayscale
+    transforms.Resize((150, 150)),  # Resize the image to 150x150
     transforms.ToTensor()  # Convert image to tensor
 ])
 
@@ -104,7 +109,7 @@ def my_face_recognition_function(A, my_FRmodel):
     transformed_image = transform(pil_image).unsqueeze(0)  # Add batch dimension
     
     # Perform inference
-    with torch.no_grad():
+    with torch.no_grad(): # no s'ha de crear el test loader etc???
         # Forward pass through the model
         logits = my_FRmodel(transformed_image)
         # Apply softmax to get probabilities
@@ -114,7 +119,7 @@ def my_face_recognition_function(A, my_FRmodel):
         # Convert to numpy array and extract the predicted class index
         predicted_class_index = predicted_class.numpy()[0]
         
-    return predicted_class_index
+    return predicted_class_index, probabilities
 
 def my_face_detection(grayscale, name):
     # Function to implement
@@ -123,8 +128,7 @@ def my_face_detection(grayscale, name):
     nose_cascade = cv.CascadeClassifier('haarcascade_mcs_nose.xml')
     mouth_cascade = cv.CascadeClassifier('haarcascade_mcs_mouth.xml')    
     
-    detected_faces = haar_cascade.detectMultiScale(grayscale, scaleFactor=1.2, minNeighbors=3) 
-    # scaleFactor: how much the image is reduced at each step. 1.05 --> 5%
+    detected_faces = haar_cascade.detectMultiScale(grayscale, scaleFactor=1.2, minNeighbors=3)
 
     valid_faces = []
 
@@ -160,13 +164,13 @@ def my_face_detection(grayscale, name):
 
 
 # Basic script for Face Recognition Challenge
-# --------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------------------
 # AGC Challenge
 # Universitat Pompeu Fabra
 
 # Load challenge Training data
 dir_challenge3 = " "
-AGC_Challenge3_TRAINING = loadmat(dir_challenge3 + "AGC_Challenge3_Training.mat")
+AGC_Challenge3_TRAINING = loadmat('AGC_Challenge3_Training.mat')
 AGC_Challenge3_TRAINING = np.squeeze(AGC_Challenge3_TRAINING['AGC_Challenge3_TRAINING'])
 
 imageName = AGC_Challenge3_TRAINING['imageName']
@@ -178,7 +182,7 @@ ids = np.concatenate(ids).ravel().tolist()
 faceBox = AGC_Challenge3_TRAINING['faceBox']
 faceBox = list(itertools.chain.from_iterable(faceBox))
 
-imgPath = " "
+imgPath = "TRAINING/"
 
 # Initialize results structure
 AutoRecognSTR = []
@@ -187,11 +191,12 @@ AutoRecognSTR = []
 total_time = 0
 
 # Load your FRModel
-
 my_FRmodel = IdEstimationModel(num_classes=80)
-#CANVIAR PATHA QUI!!!!
-my_FRmodel.load_state_dict(torch.load('/Users/nuriacodina/Desktop/UPF/QUART/2N_TRIM/FGA/ACG_2024_Nuria_Maria/lab4/Python/ourmodel_40epochs_ids.ckpt', map_location=torch.device('cpu')))  # Replace with your path
+
+my_FRmodel.load_state_dict(torch.load('Python/50epochs_batch400_resize150_conv64.ckpt', map_location=torch.device('cpu')))  # Replace with your path
 my_FRmodel.eval()
+
+print('Iterating through the images...')
 
 for idx, im in enumerate(imageName):
 
@@ -204,6 +209,7 @@ for idx, im in enumerate(imageName):
         # Your face recognition function goes here.It must accept 2 input parameters:
         #1. FACE DETECTION
         #2. FACE RECOGNITION
+
         # 1. the input image A
         # 2. the recognition model
 
@@ -213,7 +219,7 @@ for idx, im in enumerate(imageName):
         # b) A "-1" indicating that none of the 80 users is present in the input image
 
 
-        #PAS 1 -> FACE DETECTION (lab 1!!!!!!)
+        #PAS 1 -> FACE DETECTION (lab 1)
         if not len(A.shape) == 2:
             grayscale = cv.cvtColor(A, cv.COLOR_BGR2GRAY)
         else:
@@ -222,14 +228,28 @@ for idx, im in enumerate(imageName):
 
         det_faces, cropped_images = my_face_detection(grayscale, im)
 
+        if len(det_faces) == 0: # if no face is detected in the image, directly return -1
+            autom_id = -1
+            AutoRecognSTR.append(autom_id)
+            continue
+
         #PAS 2 -> FACE RECOGNITION AMB MODEL ENTRENAT -> importar pickle!!!
 
         #Per cada image retornada -> cridar recognition function -> comprovar els dos valors -> el mes gran TORNARLO
         our_ids = []
-        for image in det_faces:
-            our_ids.append(my_face_recognition_function(image, my_FRmodel))
+
+        for count, image in enumerate(det_faces):
+            predicted_class_index, probabilities = my_face_recognition_function(cropped_images[count], my_FRmodel)
+            '''sorted_probs = torch.sort(probabilities, descending = True)
+            print(im, '-->', sorted_probs)
+            print(predicted_class_index)
+            print('')'''
+
+            our_ids.append(predicted_class_index + 1)
 
         autom_id = max(our_ids)
+        if idx%20 == 0:
+            print('prediction for image', im, 'is', autom_id)
         
         tt = time.time() - ti
         total_time = total_time + tt
@@ -243,3 +263,4 @@ FR_score = CHALL_AGC_ComputeRecognScores(AutoRecognSTR, ids)
 _, rem = divmod(total_time, 3600)
 minutes, seconds = divmod(rem, 60)
 print('F1-score: %.2f, Total time: %2d m %.2f s' % (100 * FR_score, int(minutes), seconds))
+print('Number of parameters:', sum(p.numel() for p in my_FRmodel.parameters()))
