@@ -12,6 +12,50 @@ from matplotlib.patches import Rectangle
 
 import cv2 as cv
 
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import cv2
+from torchvision import transforms
+from PIL import Image
+
+# Define your model architecture
+class IdEstimationModel(nn.Module):
+    def __init__(self, num_classes):
+        super(IdEstimationModel, self).__init__()
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.AvgPool2d(kernel_size=2, stride=2),
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.AvgPool2d(kernel_size=2, stride=2),
+            nn.Conv2d(64, 128, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.AvgPool2d(kernel_size=2, stride=2),
+            nn.Conv2d(128, 256, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.AvgPool2d(kernel_size=2, stride=2)
+        )
+
+        self.classifier = nn.Sequential(
+            nn.Linear(256 * 9 * 9, 256),
+            nn.ReLU(inplace=True),
+            nn.Dropout(p=0.5),
+            nn.Linear(256, num_classes)
+        )
+
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
+        return x
+
+transform = transforms.Compose([
+    transforms.Resize((150, 150)),  # Resize the image to a specific size
+    transforms.ToTensor()  # Convert image to tensor
+])
+
 
 def CHALL_AGC_ComputeRecognScores(auto_ids, true_ids):
     #   Compute face recognition score
@@ -53,8 +97,24 @@ def CHALL_AGC_ComputeRecognScores(auto_ids, true_ids):
 
 
 def my_face_recognition_function(A, my_FRmodel):
-    # Function to implement
-    print()
+# Convert the cropped image to PIL Image
+    pil_image = Image.fromarray(A)
+    
+    # Apply transformations
+    transformed_image = transform(pil_image).unsqueeze(0)  # Add batch dimension
+    
+    # Perform inference
+    with torch.no_grad():
+        # Forward pass through the model
+        logits = my_FRmodel(transformed_image)
+        # Apply softmax to get probabilities
+        probabilities = F.softmax(logits, dim=1)
+        # Get the predicted class (identity)
+        _, predicted_class = torch.max(probabilities, 1)
+        # Convert to numpy array and extract the predicted class index
+        predicted_class_index = predicted_class.numpy()[0]
+        
+    return predicted_class_index
 
 def my_face_detection(grayscale, name):
     # Function to implement
@@ -127,7 +187,11 @@ AutoRecognSTR = []
 total_time = 0
 
 # Load your FRModel
-my_FRmodel = " "
+
+my_FRmodel = IdEstimationModel(num_classes=80)
+#CANVIAR PATHA QUI!!!!
+my_FRmodel.load_state_dict(torch.load('/Users/nuriacodina/Desktop/UPF/QUART/2N_TRIM/FGA/ACG_2024_Nuria_Maria/lab4/Python/ourmodel_40epochs_ids.ckpt', map_location=torch.device('cpu')))  # Replace with your path
+my_FRmodel.eval()
 
 for idx, im in enumerate(imageName):
 
@@ -161,11 +225,11 @@ for idx, im in enumerate(imageName):
         #PAS 2 -> FACE RECOGNITION AMB MODEL ENTRENAT -> importar pickle!!!
 
         #Per cada image retornada -> cridar recognition function -> comprovar els dos valors -> el mes gran TORNARLO
-        ids = []
+        our_ids = []
         for image in det_faces:
-            ids.append(my_face_recognition_function(image, my_FRmodel))
+            our_ids.append(my_face_recognition_function(image, my_FRmodel))
 
-        autom_id = max(ids)
+        autom_id = max(our_ids)
         
         tt = time.time() - ti
         total_time = total_time + tt
