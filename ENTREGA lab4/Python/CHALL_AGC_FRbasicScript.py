@@ -186,7 +186,7 @@ ids = np.concatenate(ids).ravel().tolist()
 faceBox = AGC_Challenge3_TRAINING['faceBox']
 faceBox = list(itertools.chain.from_iterable(faceBox))
 
-imgPath = "TRAINING/"
+imgPath = "/home/maria/Documentos/GitHub/ACG_2024_Nuria_Maria/lab4/TRAINING/" ## CHANGE PATH !!!!!
 
 # Initialize results structure
 AutoRecognSTR = []
@@ -253,14 +253,15 @@ for idx, im in enumerate(imageName):
             our_ids.append(predicted_class_index + 1)
 
         autom_id = max(our_ids)
-        if idx%20 == 0:
-            print('prediction for image', im, 'is', autom_id, 'with true label', ids[idx], '; and max prob is:', torch.max(probabilities))
+        if idx%50 == 0:
+            print('Number of processed images:', idx, '/', len(imageName))
+            # print('prediction for image', im, 'is', autom_id, 'with true label', ids[idx], '; and max prob is:', torch.max(probabilities))
         
         tt = time.time() - ti
         total_time = total_time + tt
     except:
         # If the face recognition function fails, it will be assumed that no user was detected for his input image
-        print("I'm here ofr image", im)
+        print("I'm here for image", im)
         autom_id = random.randint(-1, 80)
 
     AutoRecognSTR.append(autom_id)
