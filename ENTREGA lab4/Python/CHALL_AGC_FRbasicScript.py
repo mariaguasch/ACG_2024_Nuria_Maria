@@ -80,7 +80,7 @@ def CHALL_AGC_ComputeRecognScores(auto_ids, true_ids):
     #
 
     if len(auto_ids) != len(true_ids):
-        assert ('Inputs must be of the same len');
+        assert ('Inputs must be of the same len')
 
     f_beta = 1
     res_list = list(filter(lambda x: true_ids[x] != -1, range(len(true_ids))))
@@ -109,7 +109,7 @@ def my_face_recognition_function(A, my_FRmodel):
     transformed_image = transform(pil_image).unsqueeze(0)  # Add batch dimension
     
     # Perform inference
-    with torch.no_grad(): # no s'ha de crear el test loader etc???
+    with torch.no_grad():
         # Forward pass through the model
         logits = my_FRmodel(transformed_image)
         # Apply softmax to get probabilities
@@ -118,11 +118,7 @@ def my_face_recognition_function(A, my_FRmodel):
         _, predicted_class = torch.max(probabilities, 1)
         # Convert to numpy array and extract the predicted class index
         predicted_class_index = predicted_class.numpy()[0]
-        
-        '''if torch.max(probabilities) < threshold:
-            return -2, probabilities  #return -2 instead of -1 because then we will add 1 to the label
-        else:
-            return predicted_class_index, probabilities'''
+    
         return predicted_class_index, probabilities
 
 def my_face_detection(grayscale, name):
@@ -186,7 +182,7 @@ ids = np.concatenate(ids).ravel().tolist()
 faceBox = AGC_Challenge3_TRAINING['faceBox']
 faceBox = list(itertools.chain.from_iterable(faceBox))
 
-imgPath = "/home/maria/Documentos/GitHub/ACG_2024_Nuria_Maria/lab4/TRAINING/" ## CHANGE PATH !!!!!
+imgPath = " " ## CHANGE PATH !!!!!
 
 # Initialize results structure
 AutoRecognSTR = []
@@ -223,7 +219,7 @@ for idx, im in enumerate(imageName):
         # b) A "-1" indicating that none of the 80 users is present in the input image
 
 
-        #PAS 1 -> FACE DETECTION (lab 1)
+        #STEP 1 -> FACE DETECTION (lab 1)
         if not len(A.shape) == 2:
             grayscale = cv.cvtColor(A, cv.COLOR_BGR2GRAY)
         else:
@@ -237,25 +233,19 @@ for idx, im in enumerate(imageName):
             AutoRecognSTR.append(autom_id)
             continue
 
-        #PAS 2 -> FACE RECOGNITION AMB MODEL ENTRENAT -> importar pickle!!!
+        #STEP 2 -> FACE RECOGNITION WITH TRAINED MODEL 
 
-        #Per cada image retornada -> cridar recognition function -> comprovar els dos valors -> el mes gran TORNARLO
         our_ids = []
 
         for count, image in enumerate(det_faces):
             predicted_class_index, probabilities = my_face_recognition_function(cropped_images[count], my_FRmodel)
-            #predicted_class_index, probabilities = my_face_recognition_function(cropped_images[count], my_FRmodel, threshold=0.6)
-            '''sorted_probs = torch.sort(probabilities, descending = True)
-            print(im, '-->', sorted_probs)
-            print(predicted_class_index)
-            print('')'''
 
             our_ids.append(predicted_class_index + 1)
 
+        #As There are no images with more than one user in them, only a single identity value must be returned for each image -> we return max id. 
         autom_id = max(our_ids)
         if idx%50 == 0:
             print('Number of processed images:', idx, '/', len(imageName))
-            # print('prediction for image', im, 'is', autom_id, 'with true label', ids[idx], '; and max prob is:', torch.max(probabilities))
         
         tt = time.time() - ti
         total_time = total_time + tt
