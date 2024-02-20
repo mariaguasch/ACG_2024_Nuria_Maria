@@ -170,7 +170,7 @@ def my_face_detection(grayscale, name):
 
 # Load challenge Training data
 dir_challenge3 = " "
-AGC_Challenge3_TRAINING = loadmat('AGC_Challenge3_Training.mat')
+AGC_Challenge3_TRAINING = loadmat('/home/maria/Documentos/GitHub/ACG_2024_Nuria_Maria/lab4/AGC_Challenge3_Training.mat')  # Replace with your path !!!
 AGC_Challenge3_TRAINING = np.squeeze(AGC_Challenge3_TRAINING['AGC_Challenge3_TRAINING'])
 
 imageName = AGC_Challenge3_TRAINING['imageName']
@@ -182,7 +182,7 @@ ids = np.concatenate(ids).ravel().tolist()
 faceBox = AGC_Challenge3_TRAINING['faceBox']
 faceBox = list(itertools.chain.from_iterable(faceBox))
 
-imgPath = " " ## CHANGE PATH !!!!!
+imgPath = "/home/maria/Documentos/GitHub/ACG_2024_Nuria_Maria/lab4/TRAINING/"  # Replace with your path !!!
 
 # Initialize results structure
 AutoRecognSTR = []
@@ -193,7 +193,7 @@ total_time = 0
 # Load your FRModel
 my_FRmodel = ReducedIdEstimationModel(num_classes=80)
 
-my_FRmodel.load_state_dict(torch.load('Python/reduced_100epochs_batch400_resize150_conv64.ckpt', map_location=torch.device('cpu')))  # Replace with your path
+my_FRmodel.load_state_dict(torch.load('Python/reduced_100epochs_batch400_resize150_conv64.ckpt', map_location=torch.device('cpu')))  # Replace with your path !!!
 my_FRmodel.eval()
 
 print('Iterating through the images...')
