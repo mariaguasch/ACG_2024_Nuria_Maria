@@ -29,7 +29,7 @@ class ReducedIdEstimationModel(nn.Module):
         super(ReducedIdEstimationModel, self).__init__()
 
         self.features = nn.Sequential(
-            nn.Conv2d(1, 16, kernel_size=3, padding=1),
+            nn.Conv2d(1, 16, kernel_size=3, padding=1), # kernel 5 o 7, padding 2 o 3
             nn.ReLU(inplace=True),
             nn.AvgPool2d(kernel_size=2, stride=2),
             nn.Conv2d(16, 32, kernel_size=3, padding=1),
@@ -38,14 +38,14 @@ class ReducedIdEstimationModel(nn.Module):
             # Removed one Conv2d layer to reduce parameters
             nn.Conv2d(32, 64, kernel_size=3, padding=1),  
             nn.ReLU(inplace=True),
-            nn.AvgPool2d(kernel_size=2, stride=2), 
+            nn.AvgPool2d(kernel_size=2, stride=2), # conv mantenint canals kernel 3
             nn.AvgPool2d(kernel_size=2, stride=2)
         )
 
         self.classifier = nn.Sequential(
             nn.Linear(64 * 9 * 9, 128),  # Corrected input size based on the last layer's output
-            nn.ReLU(inplace=True),
-            nn.Dropout(p=0.5),
+            nn.ReLU(inplace=True), # ?
+            nn.Dropout(p=0.3),
             nn.Linear(128, num_classes)
         )
 
@@ -114,6 +114,7 @@ def my_face_recognition_function(A, my_FRmodel):
         logits = my_FRmodel(transformed_image)
         # Apply softmax to get probabilities
         probabilities = F.softmax(logits, dim=1)
+        print(probabilities)
         # Get the predicted class (identity)
         _, predicted_class = torch.max(probabilities, 1)
         # Convert to numpy array and extract the predicted class index

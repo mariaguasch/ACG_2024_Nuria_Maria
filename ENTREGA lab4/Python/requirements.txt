@@ -6,3 +6,5 @@ scipy
 matplotlib
 numpy
 pandas
+
+# POSAR VERSIÓ
