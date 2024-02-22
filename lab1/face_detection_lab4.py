@@ -41,7 +41,7 @@ def MyFaceDetectionFunction(grayscale, save_folder, original_filename, faces_not
         cropped_image = grayscale[valid_face[1]:valid_face[3], valid_face[0]:valid_face[2]]
 
         # Save the cropped image in the specified folder with the same name as the original image but with 'cropped_' added at the beginning
-        save_path = os.path.join(save_folder, "cropped_images")
+        save_path = os.path.join(save_folder, "new_cropped_images")
         os.makedirs(save_path, exist_ok=True)
         filename = os.path.join(save_path, f"cropped_{os.path.basename(original_filename)}")
         imwrite(filename, cropped_image)
