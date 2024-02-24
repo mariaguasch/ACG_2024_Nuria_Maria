@@ -114,7 +114,6 @@ def my_face_recognition_function(A, my_FRmodel):
         logits = my_FRmodel(transformed_image)
         # Apply softmax to get probabilities
         probabilities = F.softmax(logits, dim=1)
-        print(probabilities)
         # Get the predicted class (identity)
         _, predicted_class = torch.max(probabilities, 1)
         # Convert to numpy array and extract the predicted class index
