@@ -23,29 +23,81 @@ from PIL import Image
 
 # Define model architecture
 
-class IdEstimationModel(nn.Module):
+class batchnorm_ReducedIdEstimationModel(nn.Module):
     def __init__(self, num_classes):
-        super(IdEstimationModel, self).__init__()
+        super(batchnorm_ReducedIdEstimationModel, self).__init__()
 
-        self.features = nn.Sequential( # ORIGINAL SIZE 3 X 96 X 96
-            nn.Conv2d(3, 16, kernel_size=5, padding=3), # 16 X 98 X 98
-            nn.ReLU(inplace=True), 
-            nn.AvgPool2d(kernel_size=3, stride=2, padding=1), # 16 X 49 X 49
-            nn.Conv2d(16, 32, kernel_size=3, padding=1), # 32 X 49 X 49
-            nn.ReLU(inplace=True), 
-            nn.AvgPool2d(kernel_size=2, stride=2), # 32 X 24 X 24
-            nn.Conv2d(32, 64, kernel_size=2, padding=0), # 64 X 23 X 23
+        self.features = nn.Sequential(
+            nn.Conv2d(1, 16, kernel_size=7, padding=3),
             nn.ReLU(inplace=True),
-            nn.Conv2d(64, 64, kernel_size=2, padding=0), # 64 X 22 X 22
+            nn.BatchNorm2d(16),
+            nn.Dropout2d(0.1),
+            nn.AvgPool2d(kernel_size=2, stride=2),
+
+            nn.Conv2d(16, 32, kernel_size=5, padding=2),
             nn.ReLU(inplace=True),
-            nn.AvgPool2d(kernel_size=2, stride=2) # 64 x 11 x 11
+            nn.BatchNorm2d(32),
+            nn.Dropout2d(0.2),
+            nn.AvgPool2d(kernel_size=2, stride=2),
+
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(64),
+            nn.Dropout2d(0.3),
+            nn.AvgPool2d(kernel_size=2, stride=2),
+
+            nn.Conv2d(64, 128, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(128),
+            nn.Dropout2d(0.1),
+            nn.AvgPool2d(kernel_size=2, stride=2),
+
+            nn.Conv2d(128, 128, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(128),
+            nn.Dropout2d(0.2),
         )
 
-        # Adjusting the input size for the linear layer
         self.classifier = nn.Sequential(
-            nn.Linear(64 * 11 * 11, 128),
+            nn.Linear(128 * 6 * 6, 128),
+            nn.Linear(128, num_classes)
+        )
+
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
+        return x
+
+class modified_ReducedIdEstimationModel(nn.Module):
+    #Python/reduced_80epochs_batch400_resize150_conv64.ckpt
+    #Python/reduced_100epochs_batch400_resize150_conv64.ckpt
+    def __init__(self, num_classes):
+        super(modified_ReducedIdEstimationModel, self).__init__()
+
+        self.features = nn.Sequential(
+            nn.Conv2d(1, 16, kernel_size=7, padding=3),
             nn.ReLU(inplace=True),
-            nn.Dropout(p=0.5), 
+            nn.AvgPool2d(kernel_size=2, stride=2),
+            nn.Conv2d(16, 32, kernel_size=5, padding=2), # kernel 5 o 7, padding 2 o 3
+            nn.ReLU(inplace=True),
+            nn.AvgPool2d(kernel_size=2, stride=2), # 48
+            nn.Conv2d(32, 64, kernel_size=3, padding=1), # 48
+            nn.ReLU(inplace=True),
+            nn.AvgPool2d(kernel_size=2, stride=2), # 24
+            # Removed one Conv2d layer to reduce parameters
+            nn.Conv2d(64, 128, kernel_size=3, padding=1),  # 24
+            nn.ReLU(inplace=True),
+            nn.AvgPool2d(kernel_size=2, stride=2), # conv mantenint canals kernel 3 # 12
+            nn.Conv2d(128, 128, kernel_size=3, padding=1),  # 24
+            nn.ReLU(inplace=True),
+            # nn.AvgPool2d(kernel_size=2, stride=2) # 6
+        )
+
+        self.classifier = nn.Sequential(
+            nn.Linear(128 * 6 * 6, 128),
+            nn.ReLU(inplace=True), # ?
+            nn.Dropout(p=0.5),
             nn.Linear(128, num_classes)
         )
 
@@ -139,10 +191,10 @@ def my_face_recognition_function(A, my_FRmodel):
     # Convert the cropped image to PIL Image
     pil_image = Image.fromarray(A)
 
-    # Check the number of channels in the input image
+    '''# Check the number of channels in the input image
     if pil_image.mode == 'L':
         # Grayscale image (1 channel) - convert to RGB
-        pil_image = pil_image.convert('RGB')
+        pil_image = pil_image.convert('RGB')'''
 
     # Apply transformations
     transformed_image = transform(pil_image).unsqueeze(0)  # Add batch dimension
@@ -236,95 +288,99 @@ AutoRecognSTR = []
 total_time = 0
 
 # Load your FRModel
-my_FRmodel = IdEstimationModel(num_classes=80)
+my_FRmodel = batchnorm_ReducedIdEstimationModel(num_classes=80)
 
-my_FRmodel.load_state_dict(torch.load('Python/new_3convs_reduced2_200epochs_batch400_resize96_color.ckpt', map_location=torch.device('cpu')))  # Replace with your path !!!
+my_FRmodel.load_state_dict(torch.load('Python/models/batchnorm_k7conv_200epochs_batch250.ckpt', map_location=torch.device('cpu')))  # Replace with your path !!!
 my_FRmodel.eval()
 
 print('Iterating through the images...')
 
-for idx, im in enumerate(imageName):
+with open('output.txt', 'w') as file:
 
-    A = imread(imgPath + im)
+    for idx, im in enumerate(imageName):
 
-    try:
-        ti = time.time()
-        # Timer on
-        ###############################################################
-        # Your face recognition function goes here.It must accept 2 input parameters:
-        #1. FACE DETECTION
-        #2. FACE RECOGNITION
+        A = imread(imgPath + im)
 
-        # 1. the input image A
-        # 2. the recognition model
+        try:
+            ti = time.time()
+            # Timer on
+            ###############################################################
+            # Your face recognition function goes here.It must accept 2 input parameters:
+            #1. FACE DETECTION
+            #2. FACE RECOGNITION
 
-        # and must return a single integer number as output, which can be:
+            # 1. the input image A
+            # 2. the recognition model
 
-        # a) A number between 1 and 80 (representing one of the identities in the training set)
-        # b) A "-1" indicating that none of the 80 users is present in the input image
+            # and must return a single integer number as output, which can be:
+
+            # a) A number between 1 and 80 (representing one of the identities in the training set)
+            # b) A "-1" indicating that none of the 80 users is present in the input image
 
 
-        #STEP 1 -> FACE DETECTION (lab 1)
-        if not len(A.shape) == 2:
-            grayscale = cv.cvtColor(A, cv.COLOR_BGR2GRAY)
-        else:
-            # Handle case where image is already grayscale
-            grayscale = A
+            #STEP 1 -> FACE DETECTION (lab 1)
+            if not len(A.shape) == 2:
+                grayscale = cv.cvtColor(A, cv.COLOR_BGR2GRAY)
+            else:
+                # Handle case where image is already grayscale
+                grayscale = A
 
-        det_faces = my_face_detection(grayscale, im)
-        #print('out of face_detection-->', len(det_faces))
-        
-        
-        if len(det_faces) == 0: # if no face is detected in the image, directly return -1
-            autom_id = -1
-            AutoRecognSTR.append(autom_id)
-            continue
+            det_faces = my_face_detection(grayscale, im)
+            #print('out of face_detection-->', len(det_faces))
+            
+            
+            if len(det_faces) == 0: # if no face is detected in the image, directly return -1
+                autom_id = -1
+                AutoRecognSTR.append(autom_id)
+                continue
 
-        #STEP 2 -> FACE RECOGNITION WITH TRAINED MODEL
-        #print('about to crop original image')
-        cropped_images = []
-        for face in det_faces:
-            cropped_image = A[face[1]:face[3], face[0]:face[2]]
-            cropped_images.append(cropped_image) 
+            #STEP 2 -> FACE RECOGNITION WITH TRAINED MODEL
+            #print('about to crop original image')
+            cropped_images = []
+            for face in det_faces:
+                cropped_image = grayscale[face[1]:face[3], face[0]:face[2]]
+                cropped_images.append(cropped_image) 
 
-        our_ids = []
-        confidence = []
+            our_ids = []
+            confidence = []
 
-        #print('about to recognize id')
+            #print('about to recognize id')
 
-        for count, image in enumerate(det_faces):
-            predicted_class_index, probabilities = my_face_recognition_function(cropped_images[count], my_FRmodel)
+            for count, image in enumerate(det_faces):
+                predicted_class_index, probabilities = my_face_recognition_function(cropped_images[count], my_FRmodel)
 
-            our_ids.append(predicted_class_index + 1)
-            confidence.append(torch.max(probabilities, 1).values)
+                our_ids.append(predicted_class_index + 1)
+                confidence.append(torch.max(probabilities, 1).values)
 
-        max_confidence_index = confidence.index(max(confidence))
-        autom_id = our_ids[max_confidence_index] # we keep the face with highest probability (highest confidence)
+            max_confidence_index = confidence.index(max(confidence))
+            autom_id = our_ids[max_confidence_index] # we keep the face with highest probability (highest confidence)
 
-        # L'IF AQUEST FA BAIXAR ENCARA MÉS LA F1 (no hi ha cap valor threshold que diferencii les que encerta les que no)
-        '''
-        if max(confidence) < 0.15:
-            autom_id = -1
-        
-        '''
-        #As There are no images with more than one user in them, only a single identity value must be returned for each image -> we return max id. 
-        # autom_id = max(our_ids)
-        #print('id is recognized-->', autom_id)
-        print('prediction for', im, 'is', autom_id, 'with real label', ids[idx], 'and probability', max(confidence))
-        '''if idx%50 == 0:
-            print('Number of processed images:', idx, '/', len(imageName))'''
-        
-        tt = time.time() - ti
-        total_time = total_time + tt
-    except:
-        # If the face recognition function fails, it will be assumed that no user was detected for his input image
-        print(" !!! I'm here for image", im)
-        autom_id = random.randint(-1, 80)
+            # L'IF AQUEST FA BAIXAR ENCARA MÉS LA F1 (no hi ha cap valor threshold que diferencii les que encerta les que no)
+            
+            if max(confidence) < 0.3:
+                autom_id = -1
+            
+            #As There are no images with more than one user in them, only a single identity value must be returned for each image -> we return max id. 
+            # autom_id = max(our_ids)
+            #print('id is recognized-->', autom_id)
 
-    AutoRecognSTR.append(autom_id)
+            # this is printed to output.txt
+            print('prediction for', im, 'is', autom_id, 'with real label', ids[idx], 'and probability', max(confidence), file=file)
+            
+            if idx%50 == 0:
+                print('Number of processed images:', idx, '/', len(imageName))
+            
+            tt = time.time() - ti
+            total_time = total_time + tt
+        except:
+            # If the face recognition function fails, it will be assumed that no user was detected for his input image
+            print(" !!! I'm here for image", im)
+            autom_id = random.randint(-1, 80)
 
-FR_score = CHALL_AGC_ComputeRecognScores(AutoRecognSTR, ids)
-_, rem = divmod(total_time, 3600)
-minutes, seconds = divmod(rem, 60)
-print('F1-score: %.2f, Total time: %2d m %.2f s' % (100 * FR_score, int(minutes), seconds))
-print('Number of parameters:', sum(p.numel() for p in my_FRmodel.parameters()))
+        AutoRecognSTR.append(autom_id)
+
+    FR_score = CHALL_AGC_ComputeRecognScores(AutoRecognSTR, ids)
+    _, rem = divmod(total_time, 3600)
+    minutes, seconds = divmod(rem, 60)
+    print('F1-score: %.2f, Total time: %2d m %.2f s' % (100 * FR_score, int(minutes), seconds))
+    print('Number of parameters:', sum(p.numel() for p in my_FRmodel.parameters()))
