@@ -106,9 +106,86 @@ class ReducedIdEstimationModel(nn.Module):
         )
 
         self.classifier = nn.Sequential(
-            nn.Linear(64 * 9 * 9, 128),  # Corrected input size based on the last layer's output
+            nn.Linear(64 * 6 * 6, 128),  # Corrected input size based on the last layer's output
             nn.ReLU(inplace=True),
             nn.Dropout(p=0.5),
+            nn.Linear(128, num_classes)
+        )
+
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
+        return x
+
+class modified_ReducedIdEstimationModel(nn.Module):
+    def __init__(self, num_classes):
+        super(modified_ReducedIdEstimationModel, self).__init__()
+
+        self.features = nn.Sequential(
+            nn.Conv2d(1, 16, kernel_size=7, padding=3),
+            nn.ReLU(inplace=True),
+            nn.AvgPool2d(kernel_size=2, stride=2),
+            nn.Conv2d(16, 32, kernel_size=5, padding=2), # kernel 5 o 7, padding 2 o 3
+            nn.ReLU(inplace=True),
+            nn.AvgPool2d(kernel_size=2, stride=2), # 48
+            nn.Conv2d(32, 64, kernel_size=3, padding=1), # 48
+            nn.ReLU(inplace=True),
+            nn.AvgPool2d(kernel_size=2, stride=2), # 24
+            # Removed one Conv2d layer to reduce parameters
+            nn.Conv2d(64, 128, kernel_size=3, padding=1),  # 24
+            nn.ReLU(inplace=True),
+            nn.AvgPool2d(kernel_size=2, stride=2), # conv mantenint canals kernel 3 # 12
+            nn.Conv2d(128, 128, kernel_size=3, padding=1),  # 24
+            nn.ReLU(inplace=True),
+            # nn.AvgPool2d(kernel_size=2, stride=2) # 6
+        )
+
+        self.classifier = nn.Sequential(
+            nn.Linear(128 * 6 * 6, 128),
+            nn.ReLU(inplace=True), # ?
+            nn.Dropout(p=0.5),
+            nn.Linear(128, num_classes)
+        )
+
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
+        return x
+    
+class MyModel(nn.Module):
+    def __init__(self, num_classes):
+        super(MyModel, self).__init__()
+
+        self.features = nn.Sequential(
+            nn.Conv2d(1, 16, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(16),
+            nn.Dropout(p=0.1),
+            nn.AvgPool2d(kernel_size=2, stride=2),
+
+            nn.Conv2d(16, 32, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(32),
+            nn.Dropout(p=0.1),
+            nn.AvgPool2d(kernel_size=2, stride=2),
+
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(64),
+            nn.Dropout(p=0.1),
+            nn.AvgPool2d(kernel_size=2, stride=2),
+
+            nn.Conv2d(64, 128, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(128),
+            nn.Dropout(p=0.1),
+            nn.AvgPool2d(kernel_size=2, stride=2),
+        )
+
+        self.classifier = nn.Sequential(
+            nn.Linear(128 * 6 * 6, 128),
             nn.Linear(128, num_classes)
         )
 
@@ -258,9 +335,9 @@ AutoRecognSTR = []
 total_time = 0
 
 # Load your FRModel
-my_FRmodel = IdEstimationModel2(num_classes=80)
+my_FRmodel = MyModel(num_classes=80)
 
-my_FRmodel.load_state_dict(torch.load('Python/models/prova_150epochs_batch400_resize96_firstmodel_greyscale.ckpt', map_location=torch.device('cpu')))  # Replace with your path
+my_FRmodel.load_state_dict(torch.load('Python/models/reduced_100epochs_batch250_resize96_batchnorm.ckpt', map_location=torch.device('cpu')))  # Replace with your path
 my_FRmodel.eval()
 
 print('Iterating through the images...')
@@ -317,7 +394,7 @@ for idx, im in enumerate(imageName):
 
         autom_id = max(our_ids)
         if idx%20 == 0:
-            print('prediction for image', im, 'is', autom_id, 'with true label', ids[idx], '; and max prob is:', torch.max(probabilities))
+            print('prediction for image', im, 'is', autom_id, 'with true label', ids[idx], '; and max prob is:', torch.max(probabilities), 'and sum probabilities is:', torch.sum(probabilities))
         
         tt = time.time() - ti
         total_time = total_time + tt
