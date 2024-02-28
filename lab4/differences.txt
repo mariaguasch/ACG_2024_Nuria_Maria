@@ -1,0 +1,246 @@
+prediction for image_A0003.jpg is 61 with real label 39 and probability tensor([0.2654])
+prediction for image_A0003.jpg is -1 with real label 39 and probability tensor([0.2654])
+
+prediction for image_A0055.jpg is 36 with real label 36 and probability tensor([0.1805])
+prediction for image_A0055.jpg is -1 with real label 36 and probability tensor([0.1805])
+
+prediction for image_A0062.jpg is 80 with real label 80 and probability tensor([0.2937])
+prediction for image_A0062.jpg is -1 with real label 80 and probability tensor([0.2937])
+
+prediction for image_A0072.jpg is 39 with real label 79 and probability tensor([0.2786])
+prediction for image_A0072.jpg is -1 with real label 79 and probability tensor([0.2786])
+
+prediction for image_A0091.jpg is 63 with real label 20 and probability tensor([0.2068])
+prediction for image_A0091.jpg is -1 with real label 20 and probability tensor([0.2068])
+
+prediction for image_A0115.jpg is 51 with real label 47 and probability tensor([0.2298])
+prediction for image_A0115.jpg is -1 with real label 47 and probability tensor([0.2298])
+
+prediction for image_A0123.jpg is 1 with real label 1 and probability tensor([0.2458])
+prediction for image_A0123.jpg is -1 with real label 1 and probability tensor([0.2458])
+
+prediction for image_A0133.jpg is 18 with real label 57 and probability tensor([0.1428])
+prediction for image_A0133.jpg is -1 with real label 57 and probability tensor([0.1428])
+
+prediction for image_A0171.jpg is 2 with real label 74 and probability tensor([0.1803])
+prediction for image_A0171.jpg is -1 with real label 74 and probability tensor([0.1803])
+
+prediction for image_A0184.jpg is 55 with real label 61 and probability tensor([0.2276])
+prediction for image_A0184.jpg is -1 with real label 61 and probability tensor([0.2276])
+
+prediction for image_A0212.jpg is 4 with real label 11 and probability tensor([0.2406])
+prediction for image_A0212.jpg is -1 with real label 11 and probability tensor([0.2406])
+
+prediction for image_A0221.jpg is 13 with real label 12 and probability tensor([0.1505])
+prediction for image_A0221.jpg is -1 with real label 12 and probability tensor([0.1505])
+
+prediction for image_A0236.jpg is 24 with real label 35 and probability tensor([0.2889])
+prediction for image_A0236.jpg is -1 with real label 35 and probability tensor([0.2889])
+
+prediction for image_A0241.jpg is 4 with real label 23 and probability tensor([0.2153])
+prediction for image_A0241.jpg is -1 with real label 23 and probability tensor([0.2153])
+
+prediction for image_A0254.jpg is 73 with real label 73 and probability tensor([0.2440])
+prediction for image_A0254.jpg is -1 with real label 73 and probability tensor([0.2440])
+
+prediction for image_A0278.jpg is 17 with real label 17 and probability tensor([0.1875])
+prediction for image_A0278.jpg is -1 with real label 17 and probability tensor([0.1875])
+
+prediction for image_A0291.jpg is 58 with real label 58 and probability tensor([0.2863])
+prediction for image_A0291.jpg is -1 with real label 58 and probability tensor([0.2863])
+
+prediction for image_A0294.jpg is 25 with real label 6 and probability tensor([0.1473])
+prediction for image_A0294.jpg is -1 with real label 6 and probability tensor([0.1473])
+
+prediction for image_A0301.jpg is 75 with real label 16 and probability tensor([0.1609])
+prediction for image_A0301.jpg is -1 with real label 16 and probability tensor([0.1609])
+
+prediction for image_A0320.jpg is 79 with real label 41 and probability tensor([0.1302])
+prediction for image_A0320.jpg is -1 with real label 41 and probability tensor([0.1302])
+
+prediction for image_A0336.jpg is 40 with real label 31 and probability tensor([0.2899])
+prediction for image_A0336.jpg is -1 with real label 31 and probability tensor([0.2899])
+
+prediction for image_A0338.jpg is 64 with real label 64 and probability tensor([0.2661])
+prediction for image_A0338.jpg is -1 with real label 64 and probability tensor([0.2661])
+
+prediction for image_A0340.jpg is 31 with real label 22 and probability tensor([0.1832])
+prediction for image_A0340.jpg is -1 with real label 22 and probability tensor([0.1832])
+
+prediction for image_A0351.jpg is 75 with real label 11 and probability tensor([0.1733])
+prediction for image_A0351.jpg is -1 with real label 11 and probability tensor([0.1733])
+
+prediction for image_A0357.jpg is 32 with real label 56 and probability tensor([0.2343])
+prediction for image_A0357.jpg is -1 with real label 56 and probability tensor([0.2343])
+
+prediction for image_A0365.jpg is 61 with real label 61 and probability tensor([0.2990])
+prediction for image_A0365.jpg is -1 with real label 61 and probability tensor([0.2990])
+
+prediction for image_A0376.jpg is 70 with real label 37 and probability tensor([0.1629])
+prediction for image_A0376.jpg is -1 with real label 37 and probability tensor([0.1629])
+
+prediction for image_A0378.jpg is 31 with real label 71 and probability tensor([0.2520])
+prediction for image_A0378.jpg is -1 with real label 71 and probability tensor([0.2520])
+
+prediction for image_A0384.jpg is 28 with real label 3 and probability tensor([0.1847])
+prediction for image_A0384.jpg is -1 with real label 3 and probability tensor([0.1847])
+
+prediction for image_A0390.jpg is 74 with real label 32 and probability tensor([0.1838])
+prediction for image_A0390.jpg is -1 with real label 32 and probability tensor([0.1838])
+
+prediction for image_A0396.jpg is 40 with real label 5 and probability tensor([0.1772])
+prediction for image_A0396.jpg is -1 with real label 5 and probability tensor([0.1772])
+
+prediction for image_A0402.jpg is 26 with real label 26 and probability tensor([0.1950])
+prediction for image_A0402.jpg is -1 with real label 26 and probability tensor([0.1950])
+
+prediction for image_A0461.jpg is 34 with real label 55 and probability tensor([0.2064])
+prediction for image_A0461.jpg is -1 with real label 55 and probability tensor([0.2064])
+
+prediction for image_A0464.jpg is 30 with real label 48 and probability tensor([0.2905])
+prediction for image_A0464.jpg is -1 with real label 48 and probability tensor([0.2905])
+
+prediction for image_A0467.jpg is 71 with real label 62 and probability tensor([0.2743])
+prediction for image_A0467.jpg is -1 with real label 62 and probability tensor([0.2743])
+
+prediction for image_A0473.jpg is 20 with real label 60 and probability tensor([0.2283])
+prediction for image_A0473.jpg is -1 with real label 60 and probability tensor([0.2283])
+
+prediction for image_A0475.jpg is 2 with real label 25 and probability tensor([0.2107])
+prediction for image_A0475.jpg is -1 with real label 25 and probability tensor([0.2107])
+
+prediction for image_A0532.jpg is 38 with real label 26 and probability tensor([0.2398])
+prediction for image_A0532.jpg is -1 with real label 26 and probability tensor([0.2398])
+
+prediction for image_A0550.jpg is 4 with real label 25 and probability tensor([0.2295])
+prediction for image_A0550.jpg is -1 with real label 25 and probability tensor([0.2295])
+
+prediction for image_A0584.jpg is 1 with real label 49 and probability tensor([0.1389])
+prediction for image_A0584.jpg is -1 with real label 49 and probability tensor([0.1389])
+
+prediction for image_A0616.jpg is 41 with real label 72 and probability tensor([0.2299])
+prediction for image_A0616.jpg is -1 with real label 72 and probability tensor([0.2299])
+
+prediction for image_A0636.jpg is 9 with real label 37 and probability tensor([0.1263])
+prediction for image_A0636.jpg is -1 with real label 37 and probability tensor([0.1263])
+
+prediction for image_A0646.jpg is 25 with real label 13 and probability tensor([0.1626])
+prediction for image_A0646.jpg is -1 with real label 13 and probability tensor([0.1626])
+
+prediction for image_A0648.jpg is 68 with real label 62 and probability tensor([0.2614])
+prediction for image_A0648.jpg is -1 with real label 62 and probability tensor([0.2614])
+
+prediction for image_A0649.jpg is 52 with real label 37 and probability tensor([0.2695])
+prediction for image_A0649.jpg is -1 with real label 37 and probability tensor([0.2695])
+
+prediction for image_A0650.jpg is 33 with real label 65 and probability tensor([0.0655])
+prediction for image_A0650.jpg is -1 with real label 65 and probability tensor([0.0655])
+
+prediction for image_A0670.jpg is 51 with real label 65 and probability tensor([0.2488])
+prediction for image_A0670.jpg is -1 with real label 65 and probability tensor([0.2488])
+
+prediction for image_A0675.jpg is 72 with real label 51 and probability tensor([0.2699])
+prediction for image_A0675.jpg is -1 with real label 51 and probability tensor([0.2699])
+
+prediction for image_A0699.jpg is 5 with real label 5 and probability tensor([0.2867])
+prediction for image_A0699.jpg is -1 with real label 5 and probability tensor([0.2867])
+
+prediction for image_A0708.jpg is 80 with real label 17 and probability tensor([0.2855])
+prediction for image_A0708.jpg is -1 with real label 17 and probability tensor([0.2855])
+
+prediction for image_A0736.jpg is 59 with real label 59 and probability tensor([0.2458])
+prediction for image_A0736.jpg is -1 with real label 59 and probability tensor([0.2458])
+
+prediction for image_A0739.jpg is 41 with real label 42 and probability tensor([0.1949])
+prediction for image_A0739.jpg is -1 with real label 42 and probability tensor([0.1949])
+
+prediction for image_A0740.jpg is 19 with real label 68 and probability tensor([0.2245])
+prediction for image_A0740.jpg is -1 with real label 68 and probability tensor([0.2245])
+
+prediction for image_A0742.jpg is 7 with real label 19 and probability tensor([0.2291])
+prediction for image_A0742.jpg is -1 with real label 19 and probability tensor([0.2291])
+
+prediction for image_A0755.jpg is 79 with real label 10 and probability tensor([0.2144])
+prediction for image_A0755.jpg is -1 with real label 10 and probability tensor([0.2144])
+
+prediction for image_A0756.jpg is 54 with real label 17 and probability tensor([0.1530])
+prediction for image_A0756.jpg is -1 with real label 17 and probability tensor([0.1530])
+
+prediction for image_A0762.jpg is 24 with real label 24 and probability tensor([0.1217])
+prediction for image_A0762.jpg is -1 with real label 24 and probability tensor([0.1217])
+
+prediction for image_A0786.jpg is 72 with real label 20 and probability tensor([0.1755])
+prediction for image_A0786.jpg is -1 with real label 20 and probability tensor([0.1755])
+
+prediction for image_A0790.jpg is 74 with real label 40 and probability tensor([0.1411])
+prediction for image_A0790.jpg is -1 with real label 40 and probability tensor([0.1411])
+
+prediction for image_A0798.jpg is 19 with real label 24 and probability tensor([0.2803])
+prediction for image_A0798.jpg is -1 with real label 24 and probability tensor([0.2803])
+
+prediction for image_A0804.jpg is 22 with real label 34 and probability tensor([0.2269])
+prediction for image_A0804.jpg is -1 with real label 34 and probability tensor([0.2269])
+
+prediction for image_A0818.jpg is 48 with real label 28 and probability tensor([0.1298])
+prediction for image_A0818.jpg is -1 with real label 28 and probability tensor([0.1298])
+
+prediction for image_A0841.jpg is 66 with real label 35 and probability tensor([0.2697])
+prediction for image_A0841.jpg is -1 with real label 35 and probability tensor([0.2697])
+
+prediction for image_A0853.jpg is 80 with real label 60 and probability tensor([0.2193])
+prediction for image_A0853.jpg is -1 with real label 60 and probability tensor([0.2193])
+
+prediction for image_A0859.jpg is 4 with real label 4 and probability tensor([0.2367])
+prediction for image_A0859.jpg is -1 with real label 4 and probability tensor([0.2367])
+
+prediction for image_A0870.jpg is 71 with real label 40 and probability tensor([0.1943])
+prediction for image_A0870.jpg is -1 with real label 40 and probability tensor([0.1943])
+
+prediction for image_A0887.jpg is 18 with real label 68 and probability tensor([0.1239])
+prediction for image_A0887.jpg is -1 with real label 68 and probability tensor([0.1239])
+
+prediction for image_A0903.jpg is 38 with real label 1 and probability tensor([0.1472])
+prediction for image_A0903.jpg is -1 with real label 1 and probability tensor([0.1472])
+
+prediction for image_A0911.jpg is 52 with real label 48 and probability tensor([0.2506])
+prediction for image_A0911.jpg is -1 with real label 48 and probability tensor([0.2506])
+
+prediction for image_A0931.jpg is 61 with real label 38 and probability tensor([0.1719])
+prediction for image_A0931.jpg is -1 with real label 38 and probability tensor([0.1719])
+
+prediction for image_A0939.jpg is 17 with real label 76 and probability tensor([0.2834])
+prediction for image_A0939.jpg is -1 with real label 76 and probability tensor([0.2834])
+
+prediction for image_A0965.jpg is 17 with real label 17 and probability tensor([0.2398])
+prediction for image_A0965.jpg is -1 with real label 17 and probability tensor([0.2398])
+
+prediction for image_A0970.jpg is 28 with real label 80 and probability tensor([0.2858])
+prediction for image_A0970.jpg is -1 with real label 80 and probability tensor([0.2858])
+
+prediction for image_A1007.jpg is 18 with real label 30 and probability tensor([0.2942])
+prediction for image_A1007.jpg is -1 with real label 30 and probability tensor([0.2942])
+
+prediction for image_A1063.jpg is 58 with real label 58 and probability tensor([0.2781])
+prediction for image_A1063.jpg is -1 with real label 58 and probability tensor([0.2781])
+
+prediction for image_A1075.jpg is 58 with real label 20 and probability tensor([0.2624])
+prediction for image_A1075.jpg is -1 with real label 20 and probability tensor([0.2624])
+
+prediction for image_A1098.jpg is 9 with real label 39 and probability tensor([0.2566])
+prediction for image_A1098.jpg is -1 with real label 39 and probability tensor([0.2566])
+
+prediction for image_A1107.jpg is 26 with real label 10 and probability tensor([0.1359])
+prediction for image_A1107.jpg is -1 with real label 10 and probability tensor([0.1359])
+
+prediction for image_A1112.jpg is 55 with real label 3 and probability tensor([0.2002])
+prediction for image_A1112.jpg is -1 with real label 3 and probability tensor([0.2002])
+
+prediction for image_A1125.jpg is 80 with real label 63 and probability tensor([0.2454])
+prediction for image_A1125.jpg is -1 with real label 63 and probability tensor([0.2454])
+
+prediction for image_A1132.jpg is 44 with real label 57 and probability tensor([0.1515])
+prediction for image_A1132.jpg is -1 with real label 57 and probability tensor([0.1515])
+
+prediction for image_A1138.jpg is 29 with real label 29 and probability tensor([0.2965])
+prediction for image_A1138.jpg is -1 with real label 29 and probability tensor([0.2965])
+

@@ -23,6 +23,14 @@ from PIL import Image
 
 # Define model architecture
 
+def draw_rectangles(image, faces, output_folder, filename):
+    for idx, face in enumerate(faces):
+        x, y, w, h = face
+        cv.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw a green rectangle
+
+    output_path = os.path.join(output_folder, filename)
+    cv.imwrite(output_path, image)
+
 class batchnorm_ReducedIdEstimationModel(nn.Module):
     def __init__(self, num_classes):
         super(batchnorm_ReducedIdEstimationModel, self).__init__()
@@ -290,7 +298,7 @@ total_time = 0
 # Load your FRModel
 my_FRmodel = batchnorm_ReducedIdEstimationModel(num_classes=80)
 
-my_FRmodel.load_state_dict(torch.load('Python/models/batchnorm_k7conv_200epochs_batch250.ckpt', map_location=torch.device('cpu')))  # Replace with your path !!!
+my_FRmodel.load_state_dict(torch.load('Python/models/batchnorm_k7conv_350epochs_batch250.ckpt', map_location=torch.device('cpu')))  # Replace with your path !!!
 my_FRmodel.eval()
 
 print('Iterating through the images...')
@@ -329,10 +337,13 @@ with open('output.txt', 'w') as file:
             #print('out of face_detection-->', len(det_faces))
             
             
+            
             if len(det_faces) == 0: # if no face is detected in the image, directly return -1
                 autom_id = -1
                 AutoRecognSTR.append(autom_id)
                 continue
+
+            draw_rectangles(A, det_faces, 'detected_faces', im)
 
             #STEP 2 -> FACE RECOGNITION WITH TRAINED MODEL
             #print('about to crop original image')
@@ -340,6 +351,9 @@ with open('output.txt', 'w') as file:
             for face in det_faces:
                 cropped_image = grayscale[face[1]:face[3], face[0]:face[2]]
                 cropped_images.append(cropped_image) 
+
+            output_path = os.path.join('cropped_img_faces', f'cropped_face_{idx}_{im}')
+            cv.imwrite(output_path, cropped_image)
 
             our_ids = []
             confidence = []
@@ -357,7 +371,7 @@ with open('output.txt', 'w') as file:
 
             # L'IF AQUEST FA BAIXAR ENCARA MÉS LA F1 (no hi ha cap valor threshold que diferencii les que encerta les que no)
             
-            if max(confidence) < 0.3:
+            if max(confidence) < 0.5:
                 autom_id = -1
             
             #As There are no images with more than one user in them, only a single identity value must be returned for each image -> we return max id. 
