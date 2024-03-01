@@ -192,7 +192,7 @@ def CHALL_AGC_ComputeRecognScores(auto_ids, true_ids):
 
     FR_score = (1 + f_beta ** 2) * nTP / ((1 + f_beta ** 2) * nTP + f_beta ** 2 * nFN + nFP)
 
-    return FR_score
+    return FR_score, nTP, nFP, nFN
 
 
 def my_face_recognition_function(A, my_FRmodel):
@@ -275,8 +275,8 @@ def my_face_detection(grayscale, name):
 
 # Load challenge Training data
 dir_challenge3 = " "
-#AGC_Challenge3_TRAINING = loadmat('/home/maria/Documentos/GitHub/ACG_2024_Nuria_Maria/lab4/AGC_Challenge3_Training.mat')  # Replace with your path !!!
-AGC_Challenge3_TRAINING = loadmat('/Users/nuriacodina/Desktop/UPF/QUART/2N_TRIM/FGA/ACG_2024_Nuria_Maria/lab4/AGC_Challenge3_Training.mat')
+AGC_Challenge3_TRAINING = loadmat('/home/maria/Documentos/GitHub/ACG_2024_Nuria_Maria/lab4/AGC_Challenge3_Training.mat')  # Replace with your path !!!
+#AGC_Challenge3_TRAINING = loadmat('/Users/nuriacodina/Desktop/UPF/QUART/2N_TRIM/FGA/ACG_2024_Nuria_Maria/lab4/AGC_Challenge3_Training.mat')
 AGC_Challenge3_TRAINING = np.squeeze(AGC_Challenge3_TRAINING['AGC_Challenge3_TRAINING'])
 
 imageName = AGC_Challenge3_TRAINING['imageName']
@@ -288,8 +288,8 @@ ids = np.concatenate(ids).ravel().tolist()
 faceBox = AGC_Challenge3_TRAINING['faceBox']
 faceBox = list(itertools.chain.from_iterable(faceBox))
 
-#imgPath = "/home/maria/Documentos/GitHub/ACG_2024_Nuria_Maria/lab4/TRAINING/"  # Replace with your path !!!
-imgPath = "/Users/nuriacodina/Desktop/UPF/QUART/2N_TRIM/FGA/ACG_2024_Nuria_Maria/lab4/TRAINING/" 
+imgPath = "/home/maria/Documentos/GitHub/ACG_2024_Nuria_Maria/lab4/TRAINING/"  # Replace with your path !!!
+#imgPath = "/Users/nuriacodina/Desktop/UPF/QUART/2N_TRIM/FGA/ACG_2024_Nuria_Maria/lab4/TRAINING/" 
 
 # Initialize results structure
 AutoRecognSTR = []
@@ -300,7 +300,7 @@ total_time = 0
 # Load your FRModel
 my_FRmodel = batchnorm_ReducedIdEstimationModel(num_classes=80)
 
-my_FRmodel.load_state_dict(torch.load('Python/models/batchnorm_k7conv_200epochs_batch250.ckpt', map_location=torch.device('cpu')))  # Replace with your path !!!
+my_FRmodel.load_state_dict(torch.load('Python/models/batchnorm_k7conv_350epochs_batch250.ckpt', map_location=torch.device('cpu')))  # Replace with your path !!!
 my_FRmodel.eval()
 
 print('Iterating through the images...')
@@ -397,8 +397,13 @@ with open('output.txt', 'w') as file:
 
         AutoRecognSTR.append(autom_id)
 
-    FR_score = CHALL_AGC_ComputeRecognScores(AutoRecognSTR, ids)
+    FR_score, nTP, nFP, nFN = CHALL_AGC_ComputeRecognScores(AutoRecognSTR, ids)
     _, rem = divmod(total_time, 3600)
     minutes, seconds = divmod(rem, 60)
     print('F1-score: %.2f, Total time: %2d m %.2f s' % (100 * FR_score, int(minutes), seconds))
     print('Number of parameters:', sum(p.numel() for p in my_FRmodel.parameters()))
+    print(f'True positives = {nTP}')
+    nTN = 1200 - nTP - nFN - nFP
+    print(f'True negatives = {nTN}')
+    print(f'False negatives = {nFN}')
+    print(f'False positives = {nFP}')
