@@ -71,14 +71,33 @@ transform = transforms.Compose([
     transforms.ToTensor()  # Convert image to tensor
 ])
 
+def CHALL_AGC_ComputeRecognScores(auto_ids, true_ids):
+
+    if len(auto_ids) != len(true_ids):
+        assert ('Inputs must be of the same len')
+
+    f_beta = 1
+    res_list = list(filter(lambda x: true_ids[x] != -1, range(len(true_ids))))
+
+    nTP = len([i for i in res_list if auto_ids[i] == true_ids[i]])
+
+    res_list = list(filter(lambda x: auto_ids[x] != -1, range(len(auto_ids))))
+
+    nFP = len([i for i in res_list if auto_ids[i] != true_ids[i]])
+
+    res_list_auto_ids = list(filter(lambda x: auto_ids[x] == -1, range(len(auto_ids))))
+    res_list_true_ids = list(filter(lambda x: true_ids[x] != -1, range(len(true_ids))))
+
+    nFN = len(set(res_list_auto_ids).intersection(res_list_true_ids))
+
+    FR_score = (1 + f_beta ** 2) * nTP / ((1 + f_beta ** 2) * nTP + f_beta ** 2 * nFN + nFP)
+
+    return FR_score
+
+
 def my_face_recognition_function(A, my_FRmodel):
     # Convert the cropped image to PIL Image
     pil_image = Image.fromarray(A)
-
-    '''# Check the number of channels in the input image
-    if pil_image.mode == 'L':
-        # Grayscale image (1 channel) - convert to RGB
-        pil_image = pil_image.convert('RGB')'''
 
     # Apply transformations
     transformed_image = transform(pil_image).unsqueeze(0)  # Add batch dimension
@@ -99,7 +118,9 @@ def my_face_recognition_function(A, my_FRmodel):
 
     return predicted_class_index, probabilities
 
+
 def my_face_detection(grayscale, name):
+
     # Function to implement
     haar_cascade = cv.CascadeClassifier('haarcascade_frontalface_default.xml')
     eye_cascade = cv.CascadeClassifier('haarcascade_eye.xml')
@@ -126,71 +147,29 @@ def my_face_detection(grayscale, name):
             valid_faces.append([int(x), int(y), int(x + w), int(y + h), all_detected])
 
     valid_faces = sorted(valid_faces, key=lambda x: x[4], reverse=True)
+
     # We only keep the top 2 faces with highest score, meaning that more of its features (eyes, mouth, nose) have been detected
 
     valid_faces = valid_faces[:2]
 
-    cropped_images = []
-    for face in valid_faces:
-        cropped_image = grayscale[face[1]:face[3], face[0]:face[2]]
-        cropped_images.append(cropped_image)
-
-
     valid_faces = [[x[0], x[1], x[2], x[3]] for x in valid_faces]
 
-    return valid_faces, cropped_images
-
-def CHALL_AGC_ComputeRecognScores(auto_ids, true_ids):
-    #   Compute face recognition score
-    #
-    #   INPUTS
-    #     - AutomSTR: The results of the automatic face
-    #     recognition algorithm, stored as an integer
-    #
-    #     - AGC_Challenge_STR: The ground truth ids
-    #
-    #   OUTPUT
-    #     - FR_score:     The final recognition score
-    #
-    #   --------------------------------------------------------------------
-    #   AGC Challenge
-    #   Universitat Pompeu Fabra
-    #
-
-    if len(auto_ids) != len(true_ids):
-        assert ('Inputs must be of the same len')
-
-    f_beta = 1
-    res_list = list(filter(lambda x: true_ids[x] != -1, range(len(true_ids))))
-
-    nTP = len([i for i in res_list if auto_ids[i] == true_ids[i]])
-
-    res_list = list(filter(lambda x: auto_ids[x] != -1, range(len(auto_ids))))
-
-    nFP = len([i for i in res_list if auto_ids[i] != true_ids[i]])
-
-    res_list_auto_ids = list(filter(lambda x: auto_ids[x] == -1, range(len(auto_ids))))
-    res_list_true_ids = list(filter(lambda x: true_ids[x] != -1, range(len(true_ids))))
-
-    nFN = len(set(res_list_auto_ids).intersection(res_list_true_ids))
-
-    FR_score = (1 + f_beta ** 2) * nTP / ((1 + f_beta ** 2) * nTP + f_beta ** 2 * nFN + nFP)
-
-    return FR_score
-
-
-import numpy as np
+    return valid_faces #, cropped_images
 
 # Function to perform grid search for the optimal threshold
 def grid_search_threshold(model, images, true_labels):
-    thresholds = np.linspace(0.3, 0.5, 0.9)  # Define thresholds to search over
+    thresholds = np.arange(0.0, 0.66, 0.025)  # Define thresholds to search over
+    thresholds = np.round(thresholds, 3)
     best_threshold = 0
     best_score = 0
 
     for threshold in thresholds:
+        print('***** COMPUTING SCORE FOR THRESHOLD:', threshold, '*****')
+        total_time = 0
         AutoRecognSTR = []
         for idx, image in enumerate(images):
             A = imread(imgPath + image)
+            ti = time.time()
             # Perform face detection
             if not len(A.shape) == 2:
                 grayscale = cv.cvtColor(A, cv.COLOR_BGR2GRAY)
@@ -200,7 +179,6 @@ def grid_search_threshold(model, images, true_labels):
 
             det_faces = my_face_detection(grayscale, image)
             #print('out of face_detection-->', len(det_faces))
-            
             
             if len(det_faces) == 0: # if no face is detected in the image, directly return -1
                 autom_id = -1
@@ -215,26 +193,35 @@ def grid_search_threshold(model, images, true_labels):
                 cropped_images.append(cropped_image) 
 
             # Initialize list to store predicted IDs for each detected face
-            face_ids = []
+            our_ids = []
+            confidence = []
 
             # Perform face recognition for each detected face
-            for cropped_image in cropped_images:
-                # Perform face recognition with the given threshold
-                predicted_class_index, probabilities = my_face_recognition_function(cropped_image, model)
-                if torch.max(probabilities) < threshold:
-                    auto_id = -1  # Assign -1 if probability is under the threshold
-                else:
-                    auto_id = predicted_class_index + 1
-                face_ids.append(auto_id)
+            for count, image in enumerate(det_faces):
+                predicted_class_index, probabilities = my_face_recognition_function(cropped_images[count], my_FRmodel)
 
-            # Combine IDs from all detected faces into a single ID for the image
-            auto_id = max(face_ids, default=-1)  # Assign -1 if no face is detected
+                our_ids.append(predicted_class_index + 1)
+                confidence.append(torch.max(probabilities, 1).values)
 
-            AutoRecognSTR.append(auto_id)
+            if max(confidence) < threshold:
+                autom_id = -1
+            else:
+                max_confidence_index = confidence.index(max(confidence))
+                autom_id = our_ids[max_confidence_index] # we keep the face with highest probability (highest confidence)
+
+            '''if idx%50 == 0:
+                print('Number of processed images:', idx, '/', len(imageName))'''
+
+            tt = time.time() - ti
+            total_time = total_time + tt
+            AutoRecognSTR.append(autom_id)
 
         # Compute F1-score for the current threshold
         FR_score = CHALL_AGC_ComputeRecognScores(AutoRecognSTR, true_labels)
+        _, rem = divmod(total_time, 3600)
+        minutes, seconds = divmod(rem, 60)
         print('****** Threshold', threshold, 'calculated*******')
+        print('F1-score: %.2f, Total time: %2d m %.2f s' % (100 * FR_score, int(minutes), seconds))
         if FR_score > best_score:
             best_score = FR_score
             best_threshold = threshold
@@ -258,7 +245,7 @@ imgPath = "TRAINING/"
 
 my_FRmodel = batchnorm_ReducedIdEstimationModel(num_classes=80)
 
-my_FRmodel.load_state_dict(torch.load('Python/models/batchnorm_k7conv_200epochs_batch250.ckpt', map_location=torch.device('cpu')))  # Replace with your path
+my_FRmodel.load_state_dict(torch.load('Python/models/batchnorm_k7conv_350epochs_batch250.ckpt', map_location=torch.device('cpu')))  # Replace with your path
 my_FRmodel.eval()
 
 # Perform grid search for the optimal threshold

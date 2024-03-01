@@ -275,7 +275,8 @@ def my_face_detection(grayscale, name):
 
 # Load challenge Training data
 dir_challenge3 = " "
-AGC_Challenge3_TRAINING = loadmat('/home/maria/Documentos/GitHub/ACG_2024_Nuria_Maria/lab4/AGC_Challenge3_Training.mat')  # Replace with your path !!!
+#AGC_Challenge3_TRAINING = loadmat('/home/maria/Documentos/GitHub/ACG_2024_Nuria_Maria/lab4/AGC_Challenge3_Training.mat')  # Replace with your path !!!
+AGC_Challenge3_TRAINING = loadmat('/Users/nuriacodina/Desktop/UPF/QUART/2N_TRIM/FGA/ACG_2024_Nuria_Maria/lab4/AGC_Challenge3_Training.mat')
 AGC_Challenge3_TRAINING = np.squeeze(AGC_Challenge3_TRAINING['AGC_Challenge3_TRAINING'])
 
 imageName = AGC_Challenge3_TRAINING['imageName']
@@ -287,7 +288,8 @@ ids = np.concatenate(ids).ravel().tolist()
 faceBox = AGC_Challenge3_TRAINING['faceBox']
 faceBox = list(itertools.chain.from_iterable(faceBox))
 
-imgPath = "/home/maria/Documentos/GitHub/ACG_2024_Nuria_Maria/lab4/TRAINING/"  # Replace with your path !!!
+#imgPath = "/home/maria/Documentos/GitHub/ACG_2024_Nuria_Maria/lab4/TRAINING/"  # Replace with your path !!!
+imgPath = "/Users/nuriacodina/Desktop/UPF/QUART/2N_TRIM/FGA/ACG_2024_Nuria_Maria/lab4/TRAINING/" 
 
 # Initialize results structure
 AutoRecognSTR = []
@@ -298,7 +300,7 @@ total_time = 0
 # Load your FRModel
 my_FRmodel = batchnorm_ReducedIdEstimationModel(num_classes=80)
 
-my_FRmodel.load_state_dict(torch.load('Python/models/batchnorm_k7conv_350epochs_batch250.ckpt', map_location=torch.device('cpu')))  # Replace with your path !!!
+my_FRmodel.load_state_dict(torch.load('Python/models/batchnorm_k7conv_200epochs_batch250.ckpt', map_location=torch.device('cpu')))  # Replace with your path !!!
 my_FRmodel.eval()
 
 print('Iterating through the images...')
@@ -342,8 +344,10 @@ with open('output.txt', 'w') as file:
                 autom_id = -1
                 AutoRecognSTR.append(autom_id)
                 continue
-
-            draw_rectangles(A, det_faces, 'detected_faces', im)
+            
+            #IMPRIMIR ELS IMPOSTORS DETECTATS
+            if ids[idx] == -1:
+                draw_rectangles(A, det_faces, 'detected_faces', im)
 
             #STEP 2 -> FACE RECOGNITION WITH TRAINED MODEL
             #print('about to crop original image')
@@ -371,7 +375,7 @@ with open('output.txt', 'w') as file:
 
             # L'IF AQUEST FA BAIXAR ENCARA MÉS LA F1 (no hi ha cap valor threshold que diferencii les que encerta les que no)
             
-            if max(confidence) < 0.5:
+            if max(confidence) < 0.325:
                 autom_id = -1
             
             #As There are no images with more than one user in them, only a single identity value must be returned for each image -> we return max id. 
