@@ -11,7 +11,7 @@ This folder contains the following files:
 - `lab1_CHALL_AGC_FDbasicScript.py`: Lab1 face detection file, used for the scrapped images + copied to our function.
 - `load_more_images.py`: Code used to scrap more images from different internet search engines to increment our training dataset.
 - `process_model_images.py`: Processing for the scrapped images.
-- `reduced_100epochs_batch400_resize150_conv64.cpkt`: Weights for our trained model.
+- `batchnorm_k7conv_350epochs_batch250.cpkt`: Weights for our trained model.
 - `requirements.txt`: Dependencies for our environment and code to execute.
 - `haarcascade_....`: Files used for face detection.
 - `grid_search.py`: python script used to find the optimal threshold for assigning -1 label to impostors
